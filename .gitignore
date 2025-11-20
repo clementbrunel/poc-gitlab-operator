@@ -38,6 +38,7 @@ target/
 .project
 .settings/
 .factorypath
+.claude/settings.local.json
 
 # Environment variables
 .env

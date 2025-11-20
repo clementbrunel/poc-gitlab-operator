@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)"
+    ]
+  },
+  "env": {
+    "ENABLE_BACKGROUND_TASKS": "1"
+  }
+}
