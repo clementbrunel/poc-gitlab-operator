@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Code Freeze - GitLab Deployment Manager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container">
+        <h1>Gestion du Code Freeze</h1>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <!-- Code Freeze Global -->
+        <div class="section">
+            <h2>Code Freeze Global</h2>
+
+            <div th:if="${codeFreeze.globalFreezeEnabled}" class="freeze-status">
+                <div class="alert alert-warning">
+                    <strong>Code Freeze Global ACTIF</strong>
+                    <p><strong>Raison:</strong> <span th:text="${codeFreeze.reason}">Raison</span></p>
+                    <p><strong>Activé par:</strong> <span th:text="${codeFreeze.activatedBy}">Admin</span></p>
+                    <p><strong>Date début:</strong> <span th:text="${#temporals.format(codeFreeze.freezeStartDate, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                    <p><strong>Date fin prévue:</strong> <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                </div>
+
+                <form th:action="@{/admin/code-freeze/global/disable}" method="post">
+                    <button type="submit" class="btn btn-success">Désactiver le Code Freeze Global</button>
+                </form>
+            </div>
+
+            <div th:unless="${codeFreeze.globalFreezeEnabled}" class="freeze-status">
+                <p>Aucun code freeze global actif.</p>
+
+                <form th:action="@{/admin/code-freeze/global/enable}" method="post" class="form">
+                    <div class="form-group">
+                        <label for="reason">Raison du freeze *</label>
+                        <input type="text" id="reason" name="reason" required
+                               placeholder="Ex: Période de test pour release v2.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">Date de fin prévue *</label>
+                        <input type="datetime-local" id="endDate" name="endDate" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Activer le Code Freeze Global</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Freeze par Application -->
+        <div class="section">
+            <h2>Freeze par Application</h2>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Description</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="app : ${applications}">
+                        <td><strong th:text="${app.name}">App Name</strong></td>
+                        <td th:text="${app.description}">Description</td>
+                        <td>
+                            <span th:if="${codeFreeze.isApplicationFrozen(app.name)}"
+                                  class="badge badge-danger">GELÉ</span>
+                            <span th:unless="${codeFreeze.isApplicationFrozen(app.name)}"
+                                  class="badge badge-success">ACTIF</span>
+                        </td>
+                        <td>
+                            <form th:if="${!codeFreeze.isApplicationFrozen(app.name)}"
+                                  th:action="@{/admin/code-freeze/app/freeze}" method="post"
+                                  style="display: inline;">
+                                <input type="hidden" name="applicationName" th:value="${app.name}">
+                                <button type="submit" class="btn btn-small btn-warning">Geler</button>
+                            </form>
+
+                            <form th:if="${codeFreeze.isApplicationFrozen(app.name)}"
+                                  th:action="@{/admin/code-freeze/app/unfreeze}" method="post"
+                                  style="display: inline;">
+                                <input type="hidden" name="applicationName" th:value="${app.name}">
+                                <button type="submit" class="btn btn-small btn-success">Dégeler</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Retour au Dashboard</a>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

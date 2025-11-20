@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déploiement - GitLab Deployment Manager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container">
+        <h1>Demande de Déploiement</h1>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <div th:if="${codeFreeze.globalFreezeEnabled}" class="alert alert-warning">
+            <strong>Code Freeze Global Activé</strong>
+            <p th:text="${codeFreeze.reason}">Raison du freeze</p>
+            <p>Fin prévue: <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy HH:mm')}"></span></p>
+        </div>
+
+        <form th:action="@{/deployment}" method="post" class="form">
+            <div class="form-group">
+                <label for="requesterName">Votre nom *</label>
+                <input type="text" id="requesterName" name="requesterName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="requesterEmail">Votre email *</label>
+                <input type="email" id="requesterEmail" name="requesterEmail" required>
+            </div>
+
+            <div class="form-group">
+                <label for="targetEnvironment">Environnement cible *</label>
+                <select id="targetEnvironment" name="targetEnvironment" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option value="Staging">Staging</option>
+                    <option value="Production">Production</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Applications à déployer *</label>
+                <div class="checkbox-group">
+                    <div th:each="app : ${applications}" class="checkbox-item">
+                        <input type="checkbox"
+                               th:id="'app-' + ${app.name}"
+                               name="applicationNames"
+                               th:value="${app.name}"
+                               th:disabled="${codeFreeze.isApplicationFrozen(app.name)}">
+                        <label th:for="'app-' + ${app.name}">
+                            <span th:text="${app.name}">App Name</span>
+                            <span th:if="${codeFreeze.isApplicationFrozen(app.name)}" class="badge badge-danger">GELÉ</span>
+                        </label>
+                        <br>
+                        <small th:text="${app.description}">Description</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes / Commentaires</label>
+                <textarea id="notes" name="notes" rows="5"
+                          placeholder="Ajoutez des informations supplémentaires sur cette demande..."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+            </div>
+        </form>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

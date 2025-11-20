@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - GitLab Deployment Manager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container">
+        <h1>Dashboard Administrateur</h1>
+
+        <div class="welcome">
+            <p>Bienvenue, <strong th:text="${username}">Admin</strong></p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Statut GitLab -->
+            <div class="dashboard-card">
+                <h2>Connexion GitLab</h2>
+                <div th:if="${gitlabConnected}" class="status-ok">
+                    <span class="badge badge-success">CONNECTÉ</span>
+                    <p>La connexion à GitLab fonctionne correctement.</p>
+                </div>
+                <div th:unless="${gitlabConnected}" class="status-error">
+                    <span class="badge badge-danger">DÉCONNECTÉ</span>
+                    <p>Impossible de se connecter à GitLab. Vérifiez la configuration.</p>
+                </div>
+            </div>
+
+            <!-- Statut Code Freeze -->
+            <div class="dashboard-card">
+                <h2>Code Freeze</h2>
+                <div th:if="${codeFreeze.globalFreezeEnabled}" class="status-warning">
+                    <span class="badge badge-warning">ACTIVÉ</span>
+                    <p th:text="${codeFreeze.reason}">Raison</p>
+                    <p><small>Par: <span th:text="${codeFreeze.activatedBy}">Admin</span></small></p>
+                </div>
+                <div th:unless="${codeFreeze.globalFreezeEnabled}" class="status-ok">
+                    <span class="badge badge-success">INACTIF</span>
+                    <p>Aucun code freeze global actif.</p>
+                </div>
+                <div th:if="${!codeFreeze.frozenApplications.isEmpty()}" class="frozen-apps">
+                    <p><strong>Applications gelées individuellement:</strong></p>
+                    <ul>
+                        <li th:each="app : ${codeFreeze.frozenApplications}" th:text="${app}">App</li>
+                    </ul>
+                </div>
+                <a th:href="@{/admin/code-freeze}" class="btn btn-primary">Gérer le Code Freeze</a>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/versions}" class="btn btn-secondary">Voir les versions</a>
+            <a th:href="@{/deployment}" class="btn btn-secondary">Demander un déploiement</a>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

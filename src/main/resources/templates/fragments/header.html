@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <header th:fragment="header" class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="nav-brand">
+                    <a th:href="@{/}">GitLab Deployment Manager</a>
+                </div>
+                <ul class="nav-menu">
+                    <li><a th:href="@{/}">Accueil</a></li>
+                    <li><a th:href="@{/versions}">Versions</a></li>
+                    <li><a th:href="@{/deployment}">Déploiement</a></li>
+                    <li sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/dashboard}">Admin</a>
+                    </li>
+                    <li sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/logout}">Déconnexion</a>
+                    </li>
+                    <li sec:authorize="!isAuthenticated()">
+                        <a th:href="@{/admin/login}">Connexion Admin</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+</body>
+</html>

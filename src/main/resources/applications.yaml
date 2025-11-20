@@ -1,0 +1,46 @@
+# Configuration des applications à surveiller
+# Chaque application correspond à un projet GitLab
+
+applications:
+  # Exemple d'application 1
+  - name: "Application Frontend"
+    description: "Interface utilisateur principale"
+    gitlabProjectId: 123
+    gitlabProjectPath: "team/frontend-app"
+    branch: "develop"
+    enabled: true
+    freezable: true  # Peut être gelé pendant les code freeze
+
+  # Exemple d'application 2
+  - name: "Service Backend API"
+    description: "API REST principale"
+    gitlabProjectId: 456
+    gitlabProjectPath: "team/backend-api"
+    branch: "develop"
+    enabled: true
+    freezable: true
+
+  # Exemple d'application 3
+  - name: "Service Authentification"
+    description: "Service d'authentification SSO"
+    gitlabProjectId: 789
+    gitlabProjectPath: "team/auth-service"
+    branch: "develop"
+    enabled: true
+    freezable: false  # Ne peut jamais être gelé (critique)
+
+  # Exemple d'application 4
+  - name: "Worker Jobs"
+    description: "Traitement des tâches asynchrones"
+    gitlabProjectId: 101
+    gitlabProjectPath: "team/worker-jobs"
+    branch: "develop"
+    enabled: true
+    freezable: true
+
+# Note:
+# - gitlabProjectId: ID numérique du projet dans GitLab
+# - gitlabProjectPath: Chemin du projet (namespace/project-name)
+# - branch: Branche à surveiller (généralement "develop")
+# - enabled: Si false, l'application n'apparaitra pas dans l'interface
+# - freezable: Si true, l'admin peut bloquer le déploiement pendant les code freeze

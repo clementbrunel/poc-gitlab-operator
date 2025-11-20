@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - GitLab Deployment Manager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container">
+        <h1>GitLab Deployment Manager</h1>
+
+        <div class="hero">
+            <p>Bienvenue sur l'outil de gestion des déploiements en coopération avec GitLab.</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h2>Versions</h2>
+                <p>Consultez rapidement les versions des applications sur la branche develop.</p>
+                <a th:href="@{/versions}" class="btn btn-primary">Voir les versions</a>
+            </div>
+
+            <div class="feature-card">
+                <h2>Déploiement</h2>
+                <p>Demandez le déploiement d'applications par email à l'équipe de déploiement.</p>
+                <a th:href="@{/deployment}" class="btn btn-primary">Demander un déploiement</a>
+            </div>
+
+            <div class="feature-card">
+                <h2>Administration</h2>
+                <p>Gérez les code freeze et les restrictions de déploiement.</p>
+                <a th:href="@{/admin/login}" class="btn btn-secondary">Connexion Admin</a>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

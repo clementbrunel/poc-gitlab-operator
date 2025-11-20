@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: GitLab Deployment Manager
+
+  # Configuration Thymeleaf
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  # Configuration Mail
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# Configuration GitLab
+gitlab:
+  url: ${GITLAB_URL:https://gitlab.com}
+  token: ${GITLAB_TOKEN:}
+  api-version: v4
+  timeout: 30000
+
+# Configuration Admin
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:admin123}
+
+# Configuration Déploiement
+deployment:
+  email:
+    to: ${DEPLOYMENT_EMAIL:deploy-team@example.com}
+    from: ${SMTP_FROM:noreply@deployment-manager.com}
+    subject-prefix: "[Demande Déploiement]"
+
+# Configuration Serveur
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-stacktrace: on_param
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.deployment.gitlab: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

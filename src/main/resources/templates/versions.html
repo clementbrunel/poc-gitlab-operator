@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Versions - GitLab Deployment Manager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container">
+        <h1>Versions des Applications</h1>
+
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <table class="table" th:if="${versions != null and !versions.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Application</th>
+                    <th>Version</th>
+                    <th>Dernier Commit</th>
+                    <th>Auteur</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="version : ${versions}">
+                    <td>
+                        <strong th:text="${version.application.name}">App Name</strong>
+                        <br>
+                        <small th:text="${version.application.description}">Description</small>
+                    </td>
+                    <td>
+                        <code th:text="${version.version}">v1.0.0</code>
+                    </td>
+                    <td>
+                        <a th:href="${version.commitUrl}" target="_blank" th:text="${version.commitMessage}">
+                            Commit message
+                        </a>
+                        <br>
+                        <small><code th:text="${version.commitSha}">abc123</code></small>
+                    </td>
+                    <td th:text="${version.commitAuthor}">Author</td>
+                    <td th:text="${#temporals.format(version.commitDate, 'dd/MM/yyyy HH:mm')}">Date</td>
+                    <td>
+                        <span th:if="${version.frozen}" class="badge badge-danger">GELÉ</span>
+                        <span th:unless="${version.frozen}" class="badge badge-success">Actif</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${versions == null or versions.isEmpty()}" class="alert alert-info">
+            <p>Aucune version disponible pour le moment.</p>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/}" class="btn btn-secondary">Retour</a>
+            <a th:href="@{/deployment}" class="btn btn-primary">Demander un déploiement</a>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
