@@ -152,14 +152,14 @@ poc-gitlab-operator/
 - Thymeleaf
 - Spring Mail
 - WebClient (reactive)
-- Java 25
+- Java 21
 
 ## Troubleshooting
 
 ### Application won't start
 
 Check:
-1. Java 25+ installed: `java -version`
+1. Java 21+ installed: `java -version`
 2. JAR exists: `ls -l target/gitlab-deployment-manager-*.jar`
 3. Port 8080 available: `lsof -i :8080`
 

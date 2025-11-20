@@ -22,7 +22,7 @@ Application Spring Boot permettant de gérer les déploiements en coopération a
 - **Thymeleaf** - Templates HTML
 - **Spring Mail** - Envoi d'emails
 - **WebClient** - Appels API GitLab
-- **Java 25** - Version Java
+- **Java 21** - Version Java
 
 ### Structure du projet
 ```
@@ -100,7 +100,7 @@ applications:
 ## Installation et lancement
 
 ### Prérequis
-- Java 25 ou supérieur
+- Java 21 ou supérieur
 - Maven 3.6+
 - Accès à une instance GitLab (18.4.1-ee)
 - Serveur SMTP pour l'envoi d'emails
