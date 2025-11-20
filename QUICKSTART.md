@@ -147,19 +147,19 @@ poc-gitlab-operator/
 
 ### Technologies
 
-- Spring Boot 3.2.1
+- Spring Boot 3.5.7
 - Spring Security 6
 - Thymeleaf
 - Spring Mail
 - WebClient (reactive)
-- Java 17
+- Java 25
 
 ## Troubleshooting
 
 ### Application won't start
 
 Check:
-1. Java 17+ installed: `java -version`
+1. Java 25+ installed: `java -version`
 2. JAR exists: `ls -l target/gitlab-deployment-manager-*.jar`
 3. Port 8080 available: `lsof -i :8080`
 

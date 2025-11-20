@@ -5,22 +5,22 @@ Ce guide explique comment déployer l'application GitLab Deployment Manager sur 
 ## Prérequis sur la VM
 
 ### Logiciels requis
-- **Java 17** ou supérieur
+- **Java 25** ou supérieur
 - **Systemd** (pour gérer l'application comme un service)
 - Connexion réseau vers :
   - Instance GitLab
   - Serveur SMTP
   - Port 8080 accessible (ou port personnalisé)
 
-### Installation de Java 17
+### Installation de Java 25
 
 ```bash
 # Ubuntu/Debian
 sudo apt update
-sudo apt install openjdk-17-jre
+sudo apt install openjdk-25-jre
 
 # RHEL/CentOS/Rocky
-sudo dnf install java-17-openjdk
+sudo dnf install java-25-openjdk
 
 # Vérifier l'installation
 java -version

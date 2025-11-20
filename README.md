@@ -17,12 +17,12 @@ Application Spring Boot permettant de gérer les déploiements en coopération a
 ## Architecture
 
 ### Technologies utilisées
-- **Spring Boot 3.2.1** - Framework principal
+- **Spring Boot 3.5.7** - Framework principal
 - **Spring Security** - Authentification admin
 - **Thymeleaf** - Templates HTML
 - **Spring Mail** - Envoi d'emails
 - **WebClient** - Appels API GitLab
-- **Java 17** - Version Java
+- **Java 25** - Version Java
 
 ### Structure du projet
 ```
@@ -100,7 +100,7 @@ applications:
 ## Installation et lancement
 
 ### Prérequis
-- Java 17 ou supérieur
+- Java 25 ou supérieur
 - Maven 3.6+
 - Accès à une instance GitLab (18.4.1-ee)
 - Serveur SMTP pour l'envoi d'emails
