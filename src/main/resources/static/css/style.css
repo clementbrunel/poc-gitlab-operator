@@ -478,3 +478,103 @@ h2 {
         text-align: center;
     }
 }
+
+/* Search bar for applications */
+.search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-bar input[type="text"] {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #3498db;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.search-bar input[type="text"]:focus {
+    outline: none;
+    border-color: #2980b9;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.search-bar #resultCount {
+    color: #666;
+    font-size: 0.9rem;
+    min-width: 100px;
+}
+
+/* Inline checkbox items for compact display */
+.checkbox-item-inline {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    margin: 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.checkbox-item-inline:hover {
+    background-color: #f8f9fa;
+}
+
+.checkbox-item-inline input[type="checkbox"] {
+    margin-right: 0.75rem;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.checkbox-item-inline input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.checkbox-item-inline label {
+    cursor: pointer;
+    font-weight: normal;
+    margin: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-item-inline .app-name {
+    font-weight: 500;
+}
+
+.checkbox-item-inline .badge {
+    margin-left: 0.5rem;
+}
+
+/* Optimize checkbox group for many items */
+.checkbox-group {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0;
+}
+
+/* Scroll styling */
+.checkbox-group::-webkit-scrollbar {
+    width: 10px;
+}
+
+.checkbox-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.checkbox-group::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.checkbox-group::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

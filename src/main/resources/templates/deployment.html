@@ -36,26 +36,34 @@
                 <label for="targetEnvironment">Environnement cible *</label>
                 <select id="targetEnvironment" name="targetEnvironment" required>
                     <option value="">-- Sélectionner --</option>
-                    <option value="Staging">Staging</option>
-                    <option value="Production">Production</option>
+                    <option value="GREEN">GREEN</option>
+                    <option value="ORANGE">ORANGE</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Applications à déployer *</label>
-                <div class="checkbox-group">
-                    <div th:each="app : ${applications}" class="checkbox-item">
+
+                <!-- Search bar -->
+                <div class="search-bar">
+                    <input type="text"
+                           id="appSearch"
+                           placeholder="🔍 Rechercher une application..."
+                           onkeyup="filterApplications()">
+                    <span id="resultCount"></span>
+                </div>
+
+                <div class="checkbox-group" id="appCheckboxGroup">
+                    <div th:each="app : ${applications}" class="checkbox-item-inline">
                         <input type="checkbox"
                                th:id="'app-' + ${app.name}"
                                name="applicationNames"
                                th:value="${app.name}"
                                th:disabled="${codeFreeze.isApplicationFrozen(app.name)}">
                         <label th:for="'app-' + ${app.name}">
-                            <span th:text="${app.name}">App Name</span>
+                            <span class="app-name" th:text="${app.name}">App Name</span>
                             <span th:if="${codeFreeze.isApplicationFrozen(app.name)}" class="badge badge-danger">GELÉ</span>
                         </label>
-                        <br>
-                        <small th:text="${app.description}">Description</small>
                     </div>
                 </div>
             </div>
@@ -74,5 +82,41 @@
     </main>
 
     <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        function filterApplications() {
+            const searchInput = document.getElementById('appSearch').value.toLowerCase();
+            const checkboxItems = document.querySelectorAll('.checkbox-item-inline');
+            let visibleCount = 0;
+
+            checkboxItems.forEach(item => {
+                const appName = item.querySelector('.app-name').textContent.toLowerCase();
+
+                if (appName.includes(searchInput)) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Update result count
+            const resultCount = document.getElementById('resultCount');
+            if (searchInput) {
+                resultCount.textContent = `${visibleCount} résultat(s)`;
+            } else {
+                resultCount.textContent = '';
+            }
+        }
+
+        // Select all visible checkboxes with Ctrl+A inside search box
+        document.getElementById('appSearch').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'a') {
+                e.preventDefault();
+                const visibleCheckboxes = document.querySelectorAll('.checkbox-item-inline[style*="flex"] input[type="checkbox"]:not(:disabled)');
+                visibleCheckboxes.forEach(cb => cb.checked = true);
+            }
+        });
+    </script>
 </body>
 </html>

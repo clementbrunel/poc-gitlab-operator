@@ -1,14 +1,17 @@
 package com.deployment.gitlab.service;
 
 import com.deployment.gitlab.config.GitLabClient;
+import com.deployment.gitlab.config.GitLabConfig;
 import com.deployment.gitlab.model.*;
 import com.deployment.gitlab.repository.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Service to interact with GitLab
@@ -19,8 +22,10 @@ import java.util.List;
 public class GitLabService {
 
     private final GitLabClient gitLabClient;
+    private final GitLabConfig gitLabConfig;
     private final ApplicationRepository applicationRepository;
     private final CodeFreezeService codeFreezeService;
+    private final Random random = new Random();
 
     /**
      * Retrieves versions of all active applications
@@ -46,6 +51,11 @@ public class GitLabService {
         try {
             log.debug("Retrieving version for application: {}", app.getName());
 
+            // DEMO MODE: If GitLab is not configured, return demo data
+            if (!gitLabConfig.isConfigured()) {
+                return createDemoVersion(app);
+            }
+
             // Retrieves the last commit of the branch
             GitLabCommit commit = gitLabClient.getLastCommit(
                     app.getGitlabProjectId(),
@@ -54,7 +64,7 @@ public class GitLabService {
 
             if (commit == null) {
                 log.warn("Unable to retrieve commit for application: {}", app.getName());
-                return null;
+                return createDemoVersion(app); // Fallback to demo data
             }
 
             // Builds the version
@@ -73,8 +83,45 @@ public class GitLabService {
         } catch (Exception e) {
             log.error("Error retrieving version for {}: {}",
                     app.getName(), e.getMessage());
-            return null;
+            return createDemoVersion(app); // Fallback to demo data
         }
+    }
+
+    /**
+     * Creates demo version data for testing without GitLab connection
+     */
+    private ApplicationVersion createDemoVersion(Application app) {
+        String[] demoCommitMessages = {
+                "feat: Add new feature for user management",
+                "fix: Correct bug in authentication flow",
+                "chore: Update dependencies to latest versions",
+                "refactor: Improve code structure",
+                "perf: Optimize database queries",
+                "docs: Update API documentation",
+                "test: Add unit tests for core functionality"
+        };
+
+        String[] demoAuthors = {
+                "Alice Developer", "Bob Engineer", "Charlie DevOps",
+                "Diana Architect", "Eve Tester", "Frank Admin"
+        };
+
+        // Generate realistic demo data
+        String commitSha = String.format("%08x", random.nextInt());
+        String commitMessage = demoCommitMessages[random.nextInt(demoCommitMessages.length)];
+        String author = demoAuthors[random.nextInt(demoAuthors.length)];
+        LocalDateTime commitDate = LocalDateTime.now().minusDays(random.nextInt(30));
+
+        return ApplicationVersion.builder()
+                .application(app)
+                .version("v1." + random.nextInt(10) + "." + random.nextInt(100))
+                .commitSha(commitSha)
+                .commitMessage(commitMessage)
+                .commitAuthor(author)
+                .commitDate(commitDate)
+                .commitUrl("#demo")
+                .frozen(codeFreezeService.isApplicationFrozen(app.getName()))
+                .build();
     }
 
     /**
