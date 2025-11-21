@@ -21,7 +21,7 @@
             <p>Fin prévue: <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy HH:mm')}"></span></p>
         </div>
 
-        <form th:action="@{/deployment}" method="post" class="form">
+        <form th:action="@{/deployment}" method="post" class="form" onsubmit="return confirmDeployment()">
             <div class="form-group">
                 <label for="requesterName">Votre nom *</label>
                 <input type="text" id="requesterName" name="requesterName" required>
@@ -84,6 +84,34 @@
     <div th:replace="~{fragments/footer :: footer}"></div>
 
     <script>
+        function confirmDeployment() {
+            // Get selected applications
+            const selectedApps = document.querySelectorAll('input[name="applicationNames"]:checked');
+
+            // Check if at least one application is selected
+            if (selectedApps.length === 0) {
+                alert('Veuillez sélectionner au moins une application à déployer.');
+                return false;
+            }
+
+            // Get target environment
+            const environment = document.getElementById('targetEnvironment').value;
+
+            // Build confirmation message
+            let message = `Êtes-vous sûr de vouloir envoyer une demande de déploiement ?\n\n`;
+            message += `Environnement : ${environment}\n`;
+            message += `Nombre d'applications : ${selectedApps.length}\n\n`;
+            message += `Applications sélectionnées :\n`;
+
+            selectedApps.forEach(app => {
+                const label = document.querySelector(`label[for="${app.id}"] .app-name`);
+                message += `  • ${label.textContent}\n`;
+            });
+
+            // Show confirmation dialog
+            return confirm(message);
+        }
+
         function filterApplications() {
             const searchInput = document.getElementById('appSearch').value.toLowerCase();
             const checkboxItems = document.querySelectorAll('.checkbox-item-inline');
