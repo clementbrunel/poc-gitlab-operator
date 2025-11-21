@@ -81,9 +81,42 @@
         </form>
     </main>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-icon">⚠️</span>
+                <h2>Confirmer la demande de déploiement</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-question">Êtes-vous sûr de vouloir envoyer cette demande ?</p>
+                <div class="modal-details">
+                    <div class="detail-row">
+                        <strong>Environnement :</strong>
+                        <span id="modalEnvironment" class="environment-badge"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Nombre d'applications :</strong>
+                        <span id="modalAppCount"></span>
+                    </div>
+                    <div class="detail-section">
+                        <strong>Applications sélectionnées :</strong>
+                        <ul id="modalAppList" class="app-list"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="submitForm()">Confirmer l'envoi</button>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{fragments/footer :: footer}"></div>
 
     <script>
+        let formToSubmit = null;
+
         function confirmDeployment() {
             // Get selected applications
             const selectedApps = document.querySelectorAll('input[name="applicationNames"]:checked');
@@ -97,20 +130,49 @@
             // Get target environment
             const environment = document.getElementById('targetEnvironment').value;
 
-            // Build confirmation message
-            let message = `Êtes-vous sûr de vouloir envoyer une demande de déploiement ?\n\n`;
-            message += `Environnement : ${environment}\n`;
-            message += `Nombre d'applications : ${selectedApps.length}\n\n`;
-            message += `Applications sélectionnées :\n`;
+            // Populate modal with data
+            const modalEnvironment = document.getElementById('modalEnvironment');
+            modalEnvironment.textContent = environment;
+            modalEnvironment.className = 'environment-badge environment-' + environment.toLowerCase();
 
+            document.getElementById('modalAppCount').textContent = selectedApps.length;
+
+            // Build application list
+            const appList = document.getElementById('modalAppList');
+            appList.innerHTML = '';
             selectedApps.forEach(app => {
                 const label = document.querySelector(`label[for="${app.id}"] .app-name`);
-                message += `  • ${label.textContent}\n`;
+                const li = document.createElement('li');
+                li.textContent = label.textContent;
+                appList.appendChild(li);
             });
 
-            // Show confirmation dialog
-            return confirm(message);
+            // Store form reference and show modal
+            formToSubmit = document.querySelector('form');
+            document.getElementById('confirmModal').style.display = 'flex';
+
+            return false; // Prevent immediate form submission
         }
+
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            formToSubmit = null;
+        }
+
+        function submitForm() {
+            if (formToSubmit) {
+                // Remove the onsubmit handler to avoid infinite loop
+                formToSubmit.onsubmit = null;
+                formToSubmit.submit();
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
 
         function filterApplications() {
             const searchInput = document.getElementById('appSearch').value.toLowerCase();
