@@ -25,8 +25,8 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailConfig emailConfig;
 
-    @Value("${SMTP_USERNAME:}")
-    private String smtpUsername;
+    @Value("${spring.mail.host:unconfigured.smtp}")
+    private String smtpHost;
 
     /**
      * Sends a deployment request email
@@ -59,13 +59,14 @@ public class EmailService {
         log.info("=================================================");
 
         // Demo mode if SMTP is not configured
-        if (smtpUsername == null || smtpUsername.isEmpty()) {
+        if (smtpHost == null || smtpHost.isEmpty() || "unconfigured.smtp".equals(smtpHost)) {
             log.warn("⚠️  DEMO mode - SMTP not configured");
             log.info("Email subject: {}", emailSubject);
             log.info("=== EMAIL BODY ===");
             log.info(buildEmailBody(request));
             log.info("=== END EMAIL BODY ===");
-            log.info("💡 Configure SMTP_USERNAME, SMTP_PASSWORD and SMTP_HOST to send real emails");
+            log.info("💡 Configure SMTP_HOST environment variable to send real emails");
+            log.info("💡 Example: SMTP_HOST=smtp.company.com");
             return;
         }
 

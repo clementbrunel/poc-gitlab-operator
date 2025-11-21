@@ -69,9 +69,13 @@ Required variables:
 GITLAB_URL=https://your-gitlab.com
 GITLAB_TOKEN=glpat-your-token
 SMTP_HOST=smtp.company.com
+DEPLOYMENT_EMAIL=deploy-team@company.com
+
+# Optional: only if your SMTP requires authentication
 SMTP_USERNAME=user@company.com
 SMTP_PASSWORD=your-smtp-password
-DEPLOYMENT_EMAIL=deploy-team@company.com
+SMTP_AUTH=true
+SMTP_STARTTLS=true
 ```
 
 ### 2. Configure Applications

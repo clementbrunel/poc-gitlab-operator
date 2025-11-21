@@ -17,8 +17,8 @@ public class ConfigurationChecker {
 
     private final GitLabConfig gitLabConfig;
 
-    @Value("${SMTP_USERNAME:}")
-    private String smtpUsername;
+    @Value("${spring.mail.host:unconfigured.smtp}")
+    private String smtpHost;
 
     @Value("${deployment.email.to}")
     private String deploymentEmail;
@@ -44,13 +44,14 @@ public class ConfigurationChecker {
         }
 
         // SMTP verification
-        if (smtpUsername == null || smtpUsername.isEmpty()) {
+        if (smtpHost == null || smtpHost.isEmpty() || "unconfigured.smtp".equals(smtpHost)) {
             log.warn("⚠️  SMTP configuration INCOMPLETE");
-            log.warn("   - SMTP_USERNAME: NOT CONFIGURED");
-            log.warn("   → Email sending will not work");
+            log.warn("   - SMTP_HOST: NOT CONFIGURED");
+            log.warn("   → Email sending will not work (demo mode)");
             fullyConfigured = false;
         } else {
             log.info("✓ SMTP configuration: OK");
+            log.info("   - Host: {}", smtpHost);
         }
 
         // Deployment email verification
@@ -72,7 +73,7 @@ public class ConfigurationChecker {
             log.warn("   Application is starting but some features will be limited.");
             log.warn("   For complete configuration, set the environment variables:");
             log.warn("   - GITLAB_URL, GITLAB_TOKEN");
-            log.warn("   - SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD");
+            log.warn("   - SMTP_HOST (and optionally SMTP_USERNAME/SMTP_PASSWORD if auth is required)");
             log.warn("   - DEPLOYMENT_EMAIL");
         }
 

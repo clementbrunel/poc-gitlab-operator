@@ -89,11 +89,13 @@ GITLAB_TOKEN=votre_token_gitlab
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=votre_mot_de_passe_securise
 
-# SMTP
+# SMTP (SMTP_HOST required, authentication optional)
 SMTP_HOST=smtp.entreprise.com
 SMTP_PORT=587
-SMTP_USERNAME=user@entreprise.com
-SMTP_PASSWORD=password_smtp
+SMTP_USERNAME=  # Optional if no auth required
+SMTP_PASSWORD=  # Optional if no auth required
+SMTP_AUTH=false
+SMTP_STARTTLS=false
 SMTP_FROM=noreply@deployment-manager.com
 
 # Déploiement
