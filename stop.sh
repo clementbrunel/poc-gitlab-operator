@@ -2,6 +2,10 @@
 
 # Script d'arrêt de GitLab Deployment Manager
 
+# Force UTF-8 encoding
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
 echo "==================================="
 echo "GitLab Deployment Manager - STOP"
 echo "==================================="

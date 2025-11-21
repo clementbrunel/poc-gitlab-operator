@@ -2,6 +2,13 @@ spring:
   application:
     name: GitLab Deployment Manager
 
+  # Encoding configuration
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
   # Configuration Thymeleaf
   thymeleaf:
     cache: false
@@ -65,3 +72,6 @@ logging:
     org.springframework.security: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  charset:
+    console: UTF-8
+    file: UTF-8
