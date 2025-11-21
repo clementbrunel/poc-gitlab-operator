@@ -43,7 +43,9 @@ deployment:
   email:
     to: ${DEPLOYMENT_EMAIL:deploy-team@example.com}
     from: ${SMTP_FROM:noreply@deployment-manager.com}
-    subject-prefix: "[Demande Déploiement]"
+    subjects:
+      GREEN: ${EMAIL_SUBJECT_GREEN:[DÉPLOIEMENT GREEN] Nouvelle demande de déploiement}
+      ORANGE: ${EMAIL_SUBJECT_ORANGE:[DÉPLOIEMENT ORANGE] Nouvelle demande de déploiement}
 
 # Configuration Serveur
 server:

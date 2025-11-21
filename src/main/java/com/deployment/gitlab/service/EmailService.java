@@ -4,11 +4,16 @@ import com.deployment.gitlab.model.DeploymentRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 /**
  * Service for sending emails
@@ -26,8 +31,8 @@ public class EmailService {
     @Value("${deployment.email.from}")
     private String fromEmail;
 
-    @Value("${deployment.email.subject-prefix}")
-    private String subjectPrefix;
+    @Value("#{${deployment.email.subjects}}")
+    private Map<String, String> emailSubjects;
 
     @Value("${SMTP_USERNAME:}")
     private String smtpUsername;
@@ -36,13 +41,19 @@ public class EmailService {
      * Sends a deployment request email
      */
     public void sendDeploymentRequest(DeploymentRequest request) {
+        String emailSubject = emailSubjects.getOrDefault(
+            request.getTargetEnvironment(),
+            "[DÉPLOIEMENT] Nouvelle demande de déploiement"
+        );
+
         // Demo mode if SMTP is not configured
         if (smtpUsername == null || smtpUsername.isEmpty()) {
             log.warn("⚠️  DEMO mode - SMTP not configured");
             log.info("=== DEPLOYMENT EMAIL (not sent) ===");
             log.info("To: {}", deploymentEmail);
+            log.info("CC: {}", request.getRequesterEmail());
             log.info("From: {}", fromEmail);
-            log.info("Subject: {} {}", subjectPrefix, request.getTargetEnvironment());
+            log.info("Subject: {}", emailSubject);
             log.info("=== BODY ===");
             log.info(buildEmailBody(request));
             log.info("=== END EMAIL ===");
@@ -56,7 +67,8 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(deploymentEmail);
-            message.setSubject(subjectPrefix + " " + request.getTargetEnvironment());
+            message.setCc(request.getRequesterEmail());
+            message.setSubject(emailSubject);
             message.setText(buildEmailBody(request));
 
             mailSender.send(message);
@@ -69,35 +81,88 @@ public class EmailService {
     }
 
     /**
-     * Builds the email body
+     * Loads email template for the specified environment
+     */
+    private String loadEmailTemplate(String environment) {
+        try {
+            String templatePath = "email-templates/deployment-" + environment + ".txt";
+            ClassPathResource resource = new ClassPathResource(templatePath);
+
+            if (!resource.exists()) {
+                log.warn("Template not found: {}, using fallback", templatePath);
+                return loadFallbackTemplate();
+            }
+
+            return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("Error loading email template for environment {}: {}", environment, e.getMessage());
+            return loadFallbackTemplate();
+        }
+    }
+
+    /**
+     * Fallback template if environment-specific template is not found
+     */
+    private String loadFallbackTemplate() {
+        return """
+                Demande de Déploiement
+                =====================================================
+
+                Bonjour,
+
+                Une nouvelle demande de déploiement a été soumise.
+
+                INFORMATIONS DE LA DEMANDE
+                ---------------------------
+                Environnement cible : {{TARGET_ENVIRONMENT}}
+                Date de la demande : {{REQUEST_DATE}}
+                Demandeur : {{REQUESTER_NAME}}
+
+                APPLICATIONS À DÉPLOYER
+                ------------------------
+                {{APPLICATIONS}}
+
+                COMMENTAIRES / NOTES
+                --------------------
+                {{COMMENT}}
+
+                --
+                Cordialement,
+                {{REQUESTER_NAME}}
+
+                ---
+                Ce message a été généré automatiquement par GitLab Deployment Manager
+                """;
+    }
+
+    /**
+     * Builds the email body from template
      */
     private String buildEmailBody(DeploymentRequest request) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-        StringBuilder body = new StringBuilder();
-        body.append("New deployment request\n");
-        body.append("=" .repeat(50)).append("\n\n");
+        // Load template for the target environment
+        String template = loadEmailTemplate(request.getTargetEnvironment());
 
-        body.append("Requester: ").append(request.getRequesterName()).append("\n");
-        body.append("Email: ").append(request.getRequesterEmail()).append("\n");
-        body.append("Date: ").append(request.getRequestDate().format(formatter)).append("\n");
-        body.append("Target environment: ").append(request.getTargetEnvironment()).append("\n\n");
-
-        body.append("Applications to deploy:\n");
-        body.append("-".repeat(50)).append("\n");
+        // Build applications list
+        StringBuilder applicationsList = new StringBuilder();
         for (String appName : request.getApplicationNames()) {
-            body.append("  • ").append(appName).append("\n");
+            applicationsList.append("  • ").append(appName).append("\n");
         }
 
-        if (request.getNotes() != null && !request.getNotes().isEmpty()) {
-            body.append("\nNotes:\n");
-            body.append("-".repeat(50)).append("\n");
-            body.append(request.getNotes()).append("\n");
-        }
+        // Build comment section
+        String comment = (request.getNotes() != null && !request.getNotes().isEmpty())
+            ? request.getNotes()
+            : "(Aucun commentaire)";
 
-        body.append("\n").append("=".repeat(50)).append("\n");
-        body.append("Automated email generated by GitLab Deployment Manager\n");
+        // Replace placeholders
+        String emailBody = template
+            .replace("{{TARGET_ENVIRONMENT}}", request.getTargetEnvironment())
+            .replace("{{REQUEST_DATE}}", request.getRequestDate().format(formatter))
+            .replace("{{REQUESTER_NAME}}", request.getRequesterName())
+            .replace("{{APPLICATIONS}}", applicationsList.toString().trim())
+            .replace("{{COMMENT}}", comment);
 
-        return body.toString();
+        return emailBody;
     }
 }

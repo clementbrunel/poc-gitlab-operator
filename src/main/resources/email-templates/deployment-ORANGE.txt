@@ -1,0 +1,30 @@
+Demande de Déploiement - Environnement ORANGE
+=====================================================
+
+Bonjour,
+
+Une nouvelle demande de déploiement a été soumise pour l'environnement ORANGE.
+
+⚠️ ATTENTION : L'environnement ORANGE nécessite une validation supplémentaire avant déploiement.
+
+INFORMATIONS DE LA DEMANDE
+---------------------------
+Environnement cible : ORANGE
+Date de la demande : {{REQUEST_DATE}}
+Demandeur : {{REQUESTER_NAME}}
+
+APPLICATIONS À DÉPLOYER
+------------------------
+{{APPLICATIONS}}
+
+COMMENTAIRES / NOTES
+--------------------
+{{COMMENT}}
+
+--
+Cordialement,
+{{REQUESTER_NAME}}
+
+---
+Ce message a été généré automatiquement par GitLab Deployment Manager
+Pour toute question, veuillez contacter l'équipe de déploiement.

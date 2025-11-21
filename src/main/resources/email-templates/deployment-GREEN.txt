@@ -1,0 +1,28 @@
+Demande de Déploiement - Environnement GREEN
+=====================================================
+
+Bonjour,
+
+Une nouvelle demande de déploiement a été soumise pour l'environnement GREEN.
+
+INFORMATIONS DE LA DEMANDE
+---------------------------
+Environnement cible : GREEN
+Date de la demande : {{REQUEST_DATE}}
+Demandeur : {{REQUESTER_NAME}}
+
+APPLICATIONS À DÉPLOYER
+------------------------
+{{APPLICATIONS}}
+
+COMMENTAIRES / NOTES
+--------------------
+{{COMMENT}}
+
+--
+Cordialement,
+{{REQUESTER_NAME}}
+
+---
+Ce message a été généré automatiquement par GitLab Deployment Manager
+Pour toute question, veuillez contacter l'équipe de déploiement.
