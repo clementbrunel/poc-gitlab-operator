@@ -41,28 +41,45 @@ public class EmailService {
      * Sends a deployment request email
      */
     public void sendDeploymentRequest(DeploymentRequest request) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
         String emailSubject = emailSubjects.getOrDefault(
             request.getTargetEnvironment(),
             "[DÉPLOIEMENT] Nouvelle demande de déploiement"
         );
 
+        // Log deployment request details
+        log.info("=================================================");
+        log.info("📧 Processing deployment request");
+        log.info("=================================================");
+        log.info("Requester: {}", request.getRequesterName());
+        log.info("Target Environment: {}", request.getTargetEnvironment());
+        log.info("Request Date: {}", request.getRequestDate().format(formatter));
+        log.info("Number of Applications: {}", request.getApplicationNames().size());
+        log.info("Applications to deploy:");
+        for (String appName : request.getApplicationNames()) {
+            log.info("  • {}", appName);
+        }
+        if (request.getNotes() != null && !request.getNotes().isEmpty()) {
+            log.info("Comments: {}", request.getNotes());
+        } else {
+            log.info("Comments: (none)");
+        }
+        log.info("=================================================");
+
         // Demo mode if SMTP is not configured
         if (smtpUsername == null || smtpUsername.isEmpty()) {
             log.warn("⚠️  DEMO mode - SMTP not configured");
-            log.info("=== DEPLOYMENT EMAIL (not sent) ===");
-            log.info("To: {}", deploymentEmail);
-            log.info("CC: {}", request.getRequesterEmail());
-            log.info("From: {}", fromEmail);
-            log.info("Subject: {}", emailSubject);
-            log.info("=== BODY ===");
+            log.info("Email subject: {}", emailSubject);
+            log.info("=== EMAIL BODY ===");
             log.info(buildEmailBody(request));
-            log.info("=== END EMAIL ===");
+            log.info("=== END EMAIL BODY ===");
             log.info("💡 Configure SMTP_USERNAME, SMTP_PASSWORD and SMTP_HOST to send real emails");
             return;
         }
 
         try {
-            log.info("Sending deployment request to {}", deploymentEmail);
+            log.info("📤 Sending deployment request email...");
 
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
@@ -73,9 +90,11 @@ public class EmailService {
 
             mailSender.send(message);
 
-            log.info("Deployment email sent successfully");
+            log.info("✅ Deployment email sent successfully");
+            log.info("=================================================");
         } catch (Exception e) {
-            log.error("Error sending deployment email", e);
+            log.error("❌ Error sending deployment email", e);
+            log.info("=================================================");
             throw new RuntimeException("Email sending failed: " + e.getMessage());
         }
     }
