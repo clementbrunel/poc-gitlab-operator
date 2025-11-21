@@ -195,3 +195,26 @@ Pour toute question ou problème :
 ## Licence
 
 Propriétaire - Usage interne uniquement
+## GitLab Applications Auto-Sync
+
+The application can automatically synchronize the list of applications from GitLab groups at startup.
+
+### Quick Setup
+
+```bash
+# Add to .env
+GITLAB_GROUPS=team/backend,team/frontend
+GITLAB_SYNC_BRANCH=develop
+
+# Applications will be auto-synced at startup
+./start.sh
+```
+
+### Manual Sync
+
+```bash
+./sync-gitlab-apps.sh "team/backend,team/frontend"
+```
+
+For complete documentation, see [GITLAB_SYNC.md](GITLAB_SYNC.md)
+

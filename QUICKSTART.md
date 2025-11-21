@@ -40,6 +40,21 @@ The application will:
 - Email sending (requires SMTP configuration)
 - Real application monitoring
 
+## GitLab Applications Sync (Optional)
+
+The application can automatically fetch the list of applications from GitLab groups:
+
+```bash
+# In .env
+GITLAB_GROUPS=team/backend,team/frontend
+GITLAB_SYNC_BRANCH=develop
+```
+
+When configured, applications will be automatically synced at each startup.
+
+See [GITLAB_SYNC.md](GITLAB_SYNC.md) for details.
+
+
 ## Production Mode (Full Configuration)
 
 ### 1. Configure Environment Variables
