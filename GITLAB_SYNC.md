@@ -11,7 +11,7 @@ Instead of manually maintaining the `applications.yaml` file, you can configure 
 1. **At startup**, if `GITLAB_GROUPS` is configured, the `sync-gitlab-apps.sh` script runs
 2. The script **fetches projects** from the specified GitLab groups using the API
 3. It **generates** the `applications.yaml` file with all found projects
-4. If sync fails or is not configured, the application uses **`applications.yaml.default`** as fallback
+4. If sync fails or is not configured, the application uses **`applications.default.yaml`** as fallback
 
 ## Configuration
 
@@ -107,7 +107,7 @@ Fetching projects from group: team/frontend
    Skipping GitLab synchronization
    Using default applications.yaml
 ```
-→ Uses `applications.yaml.default`
+→ Uses `applications.default.yaml`
 
 **Case 2: No projects found**
 ```
@@ -283,6 +283,6 @@ The application uses a three-tier fallback:
 
 1. **Auto-generated** - If GITLAB_GROUPS is set and sync succeeds
 2. **Existing file** - If sync fails, keeps current applications.yaml
-3. **Default file** - If no file exists, uses applications.yaml.default
+3. **Default file** - If no file exists, uses applications.default.yaml
 
 This ensures the application always has applications configured, even if GitLab is unavailable.

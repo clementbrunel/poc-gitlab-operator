@@ -142,7 +142,6 @@ poc-gitlab-operator/
 ├── src/main/resources/
 │   ├── application.yml                     # Spring Boot config
 │   ├── applications.yaml                   # App list (EDIT THIS)
-│   ├── gitlab-openapi-v2.yaml             # GitLab 18.4.1 API spec
 │   ├── templates/                          # Thymeleaf templates
 │   └── static/css/style.css               # Styles
 ├── .env.example                            # Example env vars
@@ -205,4 +204,4 @@ Default credentials (change ADMIN_USERNAME/ADMIN_PASSWORD in production):
 For detailed documentation:
 - Full README: [README.md](README.md)
 - Deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)
-- GitLab API spec: `src/main/resources/gitlab-openapi-v2.yaml`
+- GitLab sync guide: [GITLAB_SYNC.md](GITLAB_SYNC.md)

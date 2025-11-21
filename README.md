@@ -39,8 +39,7 @@ src/
 │       ├── templates/        # Templates Thymeleaf
 │       ├── static/           # CSS, JS
 │       ├── application.yml   # Configuration Spring
-│       ├── applications.yaml # Liste des applications
-│       └── gitlab-openapi-v2.yaml # Spec API GitLab 18.4.1
+│       └── applications.yaml # Liste des applications
 └── test/                     # Tests unitaires
 ```
 
@@ -155,8 +154,6 @@ Créez un Personal Access Token dans GitLab avec les permissions :
 - `GET /api/v4/projects/:id` - Récupération d'un projet
 - `GET /api/v4/projects/:id/repository/branches/:branch` - Récupération d'une branche
 - `GET /api/v4/projects/:id/repository/commits/:sha` - Récupération d'un commit
-
-La spécification OpenAPI complète est disponible dans `src/main/resources/gitlab-openapi-v2.yaml`.
 
 ## Sécurité
 

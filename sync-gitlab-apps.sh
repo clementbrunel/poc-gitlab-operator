@@ -7,7 +7,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 YAML_FILE="$SCRIPT_DIR/src/main/resources/applications.yaml"
-DEFAULT_YAML="$SCRIPT_DIR/src/main/resources/applications.yaml.default"
+DEFAULT_YAML="$SCRIPT_DIR/src/main/resources/applications.default.yaml"
 
 echo "=========================================="
 echo "GitLab Applications Synchronization"
