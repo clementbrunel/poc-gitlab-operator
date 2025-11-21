@@ -1,5 +1,6 @@
 package com.deployment.gitlab.service;
 
+import com.deployment.gitlab.config.EmailConfig;
 import com.deployment.gitlab.model.DeploymentRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 /**
  * Service for sending emails
@@ -24,15 +23,7 @@ import java.util.Map;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-
-    @Value("${deployment.email.to}")
-    private String deploymentEmail;
-
-    @Value("${deployment.email.from}")
-    private String fromEmail;
-
-    @Value("#{${deployment.email.subjects}}")
-    private Map<String, String> emailSubjects;
+    private final EmailConfig emailConfig;
 
     @Value("${SMTP_USERNAME:}")
     private String smtpUsername;
@@ -43,7 +34,7 @@ public class EmailService {
     public void sendDeploymentRequest(DeploymentRequest request) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-        String emailSubject = emailSubjects.getOrDefault(
+        String emailSubject = emailConfig.getSubjects().getOrDefault(
             request.getTargetEnvironment(),
             "[DÉPLOIEMENT] Nouvelle demande de déploiement"
         );
@@ -82,8 +73,8 @@ public class EmailService {
             log.info("📤 Sending deployment request email...");
 
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(deploymentEmail);
+            message.setFrom(emailConfig.getFrom());
+            message.setTo(emailConfig.getTo());
             message.setCc(request.getRequesterEmail());
             message.setSubject(emailSubject);
             message.setText(buildEmailBody(request));
