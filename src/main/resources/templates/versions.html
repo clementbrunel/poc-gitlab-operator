@@ -56,11 +56,80 @@
             <p>Aucune version disponible pour le moment.</p>
         </div>
 
+        <!-- Pagination Controls -->
+        <div th:if="${page != null and page.totalPages > 1}" class="pagination-container">
+            <div class="pagination-info">
+                <span>Page <strong th:text="${page.currentPage + 1}">1</strong> sur <strong th:text="${page.totalPages}">1</strong></span>
+                <span class="ml-3">Total: <strong th:text="${page.totalElements}">0</strong> applications</span>
+            </div>
+
+            <div class="pagination">
+                <!-- First Page -->
+                <a th:href="@{/versions(page=0,size=${page.pageSize})}"
+                   th:class="${page.first} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:aria-disabled="${page.first}">
+                    &laquo; Première
+                </a>
+
+                <!-- Previous Page -->
+                <a th:href="@{/versions(page=${page.currentPage - 1},size=${page.pageSize})}"
+                   th:class="${page.first} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:aria-disabled="${page.first}">
+                    &lsaquo; Précédente
+                </a>
+
+                <!-- Page Numbers (show up to 5 pages) -->
+                <span th:each="i : ${#numbers.sequence(
+                    T(java.lang.Math).max(0, page.currentPage - 2),
+                    T(java.lang.Math).min(page.totalPages - 1, page.currentPage + 2)
+                )}">
+                    <a th:href="@{/versions(page=${i},size=${page.pageSize})}"
+                       th:class="${i == page.currentPage} ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'"
+                       th:text="${i + 1}">1</a>
+                </span>
+
+                <!-- Next Page -->
+                <a th:href="@{/versions(page=${page.currentPage + 1},size=${page.pageSize})}"
+                   th:class="${page.last} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:aria-disabled="${page.last}">
+                    Suivante &rsaquo;
+                </a>
+
+                <!-- Last Page -->
+                <a th:href="@{/versions(page=${page.totalPages - 1},size=${page.pageSize})}"
+                   th:class="${page.last} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:aria-disabled="${page.last}">
+                    Dernière &raquo;
+                </a>
+            </div>
+
+            <!-- Page Size Selector -->
+            <div class="page-size-selector">
+                <label for="pageSize">Éléments par page:</label>
+                <select id="pageSize" onchange="changePageSize(this.value)">
+                    <option value="5" th:selected="${page.pageSize == 5}">5</option>
+                    <option value="10" th:selected="${page.pageSize == 10}">10</option>
+                    <option value="25" th:selected="${page.pageSize == 25}">25</option>
+                    <option value="50" th:selected="${page.pageSize == 50}">50</option>
+                    <option value="100" th:selected="${page.pageSize == 100}">100</option>
+                </select>
+            </div>
+        </div>
+
         <div class="actions">
             <a th:href="@{/}" class="btn btn-secondary">Retour</a>
             <a th:href="@{/deployment}" class="btn btn-primary">Demander un déploiement</a>
         </div>
     </main>
+
+    <script>
+        function changePageSize(newSize) {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('size', newSize);
+            currentUrl.searchParams.set('page', '0'); // Reset to first page
+            window.location.href = currentUrl.toString();
+        }
+    </script>
 
     <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
