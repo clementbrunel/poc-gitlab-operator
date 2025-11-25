@@ -48,18 +48,6 @@ fi
 # Créer le dossier de logs s'il n'existe pas
 mkdir -p logs
 
-# Sync GitLab applications if GITLAB_GROUPS is set
-if [ -n "$GITLAB_GROUPS" ]; then
-    echo ""
-    echo "🔄 Synchronisation des applications depuis GitLab..."
-    if [ -x ./sync-gitlab-apps.sh ]; then
-        ./sync-gitlab-apps.sh "$GITLAB_GROUPS" "${GITLAB_SYNC_BRANCH:-develop}"
-    else
-        echo "⚠️  sync-gitlab-apps.sh non trouvé ou non exécutable"
-    fi
-    echo ""
-fi
-
 # Démarrer l'application
 echo ""
 echo "🚀 Démarrage de l'application..."
