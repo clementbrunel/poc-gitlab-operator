@@ -50,10 +50,20 @@ public class GitLabService {
      *
      * @param page Page number (0-indexed)
      * @param pageSize Number of items per page
+     * @param searchQuery Optional search query to filter applications by name
      * @return Paginated application versions
      */
-    public PagedApplicationVersions getAllApplicationVersionsPaged(int page, int pageSize) {
+    public PagedApplicationVersions getAllApplicationVersionsPaged(int page, int pageSize, String searchQuery) {
         List<Application> allApplications = applicationRepository.findAllEnabled();
+
+        // Filter applications by search query if provided
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            String lowerQuery = searchQuery.trim().toLowerCase();
+            allApplications = allApplications.stream()
+                .filter(app -> app.getName().toLowerCase().contains(lowerQuery) ||
+                              (app.getDescription() != null && app.getDescription().toLowerCase().contains(lowerQuery)))
+                .toList();
+        }
 
         // Calculate pagination boundaries
         int totalElements = allApplications.size();
