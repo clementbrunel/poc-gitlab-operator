@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Model representing a GitLab commit (DTO)
@@ -38,10 +38,10 @@ public class GitLabCommit {
     private String authorEmail;
 
     @JsonProperty("created_at")
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @JsonProperty("committed_date")
-    private LocalDateTime committedDate;
+    private OffsetDateTime committedDate;
 
     @JsonProperty("web_url")
     private String webUrl;

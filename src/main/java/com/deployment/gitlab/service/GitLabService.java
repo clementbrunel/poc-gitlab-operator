@@ -45,6 +45,51 @@ public class GitLabService {
     }
 
     /**
+     * Retrieves versions of all active applications with pagination
+     * Only fetches commit information for applications on the requested page
+     *
+     * @param page Page number (0-indexed)
+     * @param pageSize Number of items per page
+     * @return Paginated application versions
+     */
+    public PagedApplicationVersions getAllApplicationVersionsPaged(int page, int pageSize) {
+        List<Application> allApplications = applicationRepository.findAllEnabled();
+
+        // Calculate pagination boundaries
+        int totalElements = allApplications.size();
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+        // Ensure page is within bounds
+        page = Math.max(0, Math.min(page, Math.max(0, totalPages - 1)));
+
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, totalElements);
+
+        // Only fetch commit info for applications on the current page
+        List<Application> pageApplications = start < totalElements
+            ? allApplications.subList(start, end)
+            : List.of();
+
+        List<ApplicationVersion> versions = new ArrayList<>();
+        for (Application app : pageApplications) {
+            ApplicationVersion version = getApplicationVersion(app);
+            if (version != null) {
+                versions.add(version);
+            }
+        }
+
+        return PagedApplicationVersions.builder()
+                .content(versions)
+                .currentPage(page)
+                .pageSize(pageSize)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
+                .first(page == 0)
+                .last(page >= totalPages - 1)
+                .build();
+    }
+
+    /**
      * Retrieves the version of a specific application
      */
     public ApplicationVersion getApplicationVersion(Application app) {
@@ -74,7 +119,9 @@ public class GitLabService {
                     .commitSha(commit.getShortId())
                     .commitMessage(commit.getTitle())
                     .commitAuthor(commit.getAuthorName())
-                    .commitDate(commit.getCommittedDate())
+                    .commitDate(commit.getCommittedDate() != null
+                        ? commit.getCommittedDate().toLocalDateTime()
+                        : null)
                     .commitUrl(commit.getWebUrl())
                     .frozen(codeFreezeService.isApplicationFrozen(app.getName()))
                     .build();
