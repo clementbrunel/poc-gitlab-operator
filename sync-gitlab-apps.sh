@@ -136,12 +136,18 @@ for GROUP_PATH in "${GROUPS[@]}"; do
         echo "  → URL: $GITLAB_URL/api/v4/groups/$ENCODED_GROUP/projects"
     fi
 
+    echo "  → Starting curl request (max timeout: 30s)..."
+
     # Fetch projects from GitLab API with timeout
+    # Disable set -e temporarily for curl to capture exit code
+    set +e
     RESPONSE=$(curl -s --fail --max-time 30 --connect-timeout 10 \
         -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
         "$GITLAB_URL/api/v4/groups/$ENCODED_GROUP/projects?per_page=100" 2>&1)
-
     CURL_EXIT_CODE=$?
+    set -e
+
+    echo "  → Curl request completed with exit code: $CURL_EXIT_CODE"
 
     if [ $CURL_EXIT_CODE -ne 0 ]; then
         echo "  ⚠️  Warning: Failed to fetch projects from group $(log_group "$GROUP_PATH")"
