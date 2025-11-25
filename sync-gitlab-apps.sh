@@ -17,6 +17,20 @@ echo "=========================================="
 echo "GitLab Applications Synchronization"
 echo "=========================================="
 
+# Check if required tools are installed
+if ! command -v curl &> /dev/null; then
+    echo "❌ Error: curl is not installed"
+    exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+    echo "❌ Error: jq is not installed"
+    echo "Install it with: sudo apt install jq"
+    exit 1
+fi
+
+echo "✓ Required tools: curl, jq"
+
 # Check if GITLAB_URL and GITLAB_TOKEN are set
 if [ -z "$GITLAB_URL" ] || [ -z "$GITLAB_TOKEN" ]; then
     echo "⚠️  Warning: GITLAB_URL or GITLAB_TOKEN not set"
@@ -79,18 +93,56 @@ for GROUP_PATH in "${GROUPS[@]}"; do
     # URL-encode the group path
     ENCODED_GROUP=$(echo -n "$GROUP_PATH" | jq -sRr @uri)
 
-    # Fetch projects from GitLab API
-    RESPONSE=$(curl -s --fail \
+    echo "  → Calling GitLab API..."
+    echo "  → URL: $GITLAB_URL/api/v4/groups/$ENCODED_GROUP/projects"
+
+    # Fetch projects from GitLab API with timeout
+    RESPONSE=$(curl -s --fail --max-time 30 --connect-timeout 10 \
         -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
         "$GITLAB_URL/api/v4/groups/$ENCODED_GROUP/projects?per_page=100" 2>&1)
 
-    if [ $? -ne 0 ]; then
-        echo "⚠️  Warning: Failed to fetch projects from group $GROUP_PATH"
+    CURL_EXIT_CODE=$?
+
+    if [ $CURL_EXIT_CODE -ne 0 ]; then
+        echo "  ⚠️  Warning: Failed to fetch projects from group $GROUP_PATH"
+        echo "  → curl exit code: $CURL_EXIT_CODE"
+        if [ $CURL_EXIT_CODE -eq 22 ]; then
+            echo "  → HTTP error (group not found or no access)"
+        elif [ $CURL_EXIT_CODE -eq 28 ]; then
+            echo "  → Timeout error"
+        elif [ $CURL_EXIT_CODE -eq 6 ]; then
+            echo "  → Could not resolve host"
+        fi
         continue
     fi
 
+    echo "  → API response received"
+
+    # Check if response is valid JSON
+    if ! echo "$RESPONSE" | jq empty 2>/dev/null; then
+        echo "  ⚠️  Invalid JSON response from GitLab API"
+        echo "  → Response preview: ${RESPONSE:0:200}"
+        continue
+    fi
+
+    # Count projects first
+    PROJECTS_IN_GROUP=$(echo "$RESPONSE" | jq '. | length' 2>/dev/null)
+
+    if [ -z "$PROJECTS_IN_GROUP" ] || [ "$PROJECTS_IN_GROUP" = "null" ]; then
+        echo "  ⚠️  Failed to parse project count (response might not be an array)"
+        echo "  → Response preview: ${RESPONSE:0:200}"
+        continue
+    fi
+
+    if [ "$PROJECTS_IN_GROUP" -eq 0 ]; then
+        echo "  ℹ️  No projects found in group $GROUP_PATH"
+        continue
+    fi
+
+    echo "  → Parsing $PROJECTS_IN_GROUP project(s)..."
+
     # Parse JSON and create YAML entries
-    echo "$RESPONSE" | jq -r '.[] |
+    PARSE_OUTPUT=$(echo "$RESPONSE" | jq -r '.[] |
         "  - name: \"" + .name + "\"" + "\n" +
         "    description: \"" + (.description // "No description") + "\"" + "\n" +
         "    gitlabProjectId: " + (.id | tostring) + "\n" +
@@ -98,14 +150,15 @@ for GROUP_PATH in "${GROUPS[@]}"; do
         "    branch: \"'"$BRANCH"'\"" + "\n" +
         "    enabled: true" + "\n" +
         "    freezable: true" + "\n"
-    ' >> "$TEMP_FILE" 2>/dev/null
+    ' 2>&1)
 
     if [ $? -eq 0 ]; then
-        PROJECTS_IN_GROUP=$(echo "$RESPONSE" | jq '. | length')
+        echo "$PARSE_OUTPUT" >> "$TEMP_FILE"
         PROJECT_COUNT=$((PROJECT_COUNT + PROJECTS_IN_GROUP))
-        echo "  ✓ Found $PROJECTS_IN_GROUP project(s)"
+        echo "  ✓ Successfully parsed $PROJECTS_IN_GROUP project(s)"
     else
         echo "  ⚠️  Failed to parse projects from group $GROUP_PATH"
+        echo "  → jq error: $PARSE_OUTPUT"
     fi
 done
 
