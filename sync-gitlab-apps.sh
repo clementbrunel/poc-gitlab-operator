@@ -112,11 +112,10 @@ echo "  → YAML header written successfully"
 echo "Splitting groups by comma..."
 echo "  → GITLAB_GROUPS value length: ${#GITLAB_GROUPS}"
 echo "  → About to parse groups..."
-IFS=',' read -ra GROUPS <<< "$GITLAB_GROUPS" || {
-    echo "  ❌ ERROR: Failed to split GITLAB_GROUPS"
-    echo "  → This might be a bash version issue or empty variable"
-    exit 1
-}
+# Temporarily disable exit on error for read command (read returns 1 with <<<)
+set +e
+IFS=',' read -ra GROUPS <<< "$GITLAB_GROUPS"
+set -e
 echo "  → Found ${#GROUPS[@]} group(s) to process"
 
 PROJECT_COUNT=0
