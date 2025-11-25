@@ -67,10 +67,13 @@ echo "Groups: $GITLAB_GROUPS"
 echo ""
 
 # Create temp file
+echo "Creating temporary file..."
 TEMP_FILE=$(mktemp)
+echo "  → Temp file: $TEMP_FILE"
 trap "rm -f $TEMP_FILE" EXIT
 
 # Start YAML file
+echo "Writing YAML header..."
 cat > "$TEMP_FILE" <<EOF
 # Auto-generated file - DO NOT EDIT MANUALLY
 # Generated on: $(date)
@@ -80,11 +83,16 @@ cat > "$TEMP_FILE" <<EOF
 applications:
 EOF
 
+echo "  → YAML header written successfully"
+
 # Split groups by comma
+echo "Splitting groups by comma..."
 IFS=',' read -ra GROUPS <<< "$GITLAB_GROUPS"
+echo "  → Found ${#GROUPS[@]} group(s) to process"
 
 PROJECT_COUNT=0
 
+echo ""
 for GROUP_PATH in "${GROUPS[@]}"; do
     GROUP_PATH=$(echo "$GROUP_PATH" | xargs) # trim whitespace
 
