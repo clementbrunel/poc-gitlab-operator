@@ -286,3 +286,63 @@ The application uses a three-tier fallback:
 3. **Default file** - If no file exists, uses applications.default.yaml
 
 This ensures the application always has applications configured, even if GitLab is unavailable.
+
+## Anonymous Mode for Debugging
+
+When troubleshooting sync issues, you can enable anonymous mode to hide sensitive information from logs.
+
+### Enable Anonymous Mode
+
+**Option 1: Environment variable**
+```bash
+export ANONYMOUS_MODE=true
+./sync-gitlab-apps.sh "your-groups" develop 2>&1 | tee output.log
+```
+
+**Option 2: Inline**
+```bash
+ANONYMOUS_MODE=true ./sync-gitlab-apps.sh "your-groups" develop 2>&1 | tee output.log
+```
+
+**Option 3: In .env file**
+```bash
+ANONYMOUS_MODE=true
+```
+
+### What Gets Anonymized
+
+When `ANONYMOUS_MODE=true`:
+
+| Information | Normal Mode | Anonymous Mode |
+|-------------|-------------|----------------|
+| GitLab URL | `https://gitlab.company.com` | `https://gitlab.example.com` |
+| Group names | `team/backend` | `GROUP_ANONYMIZED` |
+| API URLs | Full URL with group path | Generic URL |
+| Branch name | `develop` | `develop` (visible) |
+| Error messages | Full details | Full details (visible) |
+| Project count | Number of projects | Number of projects (visible) |
+
+### Example Output Comparison
+
+**Normal Mode:**
+```
+GitLab URL: https://gitlab.company.com
+Branch: develop
+Groups: team/backend,team/frontend
+Fetching projects from group: team/backend
+  → URL: https://gitlab.company.com/api/v4/groups/team%2Fbackend/projects
+```
+
+**Anonymous Mode:**
+```
+GitLab Applications Synchronization
+(ANONYMOUS MODE ENABLED)
+==========================================
+GitLab URL: https://gitlab.example.com
+Branch: develop
+Groups: GROUP_ANONYMIZED
+Fetching projects from group: GROUP_ANONYMIZED
+  → URL: https://gitlab.example.com/api/v4/groups/GROUP_ENCODED/projects
+```
+
+This allows you to safely share logs for troubleshooting without exposing your GitLab infrastructure details.

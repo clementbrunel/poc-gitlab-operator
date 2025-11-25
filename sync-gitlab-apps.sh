@@ -13,8 +13,31 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 YAML_FILE="$SCRIPT_DIR/src/main/resources/applications.yaml"
 DEFAULT_YAML="$SCRIPT_DIR/src/main/resources/applications.default.yaml"
 
+# Anonymous mode configuration
+ANONYMOUS_MODE="${ANONYMOUS_MODE:-false}"
+
+# Logging functions
+log_url() {
+    if [ "$ANONYMOUS_MODE" = "true" ]; then
+        echo "https://gitlab.example.com"
+    else
+        echo "$1"
+    fi
+}
+
+log_group() {
+    if [ "$ANONYMOUS_MODE" = "true" ]; then
+        echo "GROUP_ANONYMIZED"
+    else
+        echo "$1"
+    fi
+}
+
 echo "=========================================="
 echo "GitLab Applications Synchronization"
+if [ "$ANONYMOUS_MODE" = "true" ]; then
+    echo "(ANONYMOUS MODE ENABLED)"
+fi
 echo "=========================================="
 
 # Check if required tools are installed
@@ -61,9 +84,9 @@ if [ -z "$GITLAB_GROUPS" ]; then
     exit 0
 fi
 
-echo "GitLab URL: $GITLAB_URL"
+echo "GitLab URL: $(log_url "$GITLAB_URL")"
 echo "Branch: $BRANCH"
-echo "Groups: $GITLAB_GROUPS"
+echo "Groups: $(log_group "$GITLAB_GROUPS")"
 echo ""
 
 # Create temp file
@@ -96,13 +119,17 @@ echo ""
 for GROUP_PATH in "${GROUPS[@]}"; do
     GROUP_PATH=$(echo "$GROUP_PATH" | xargs) # trim whitespace
 
-    echo "Fetching projects from group: $GROUP_PATH"
+    echo "Fetching projects from group: $(log_group "$GROUP_PATH")"
 
     # URL-encode the group path
     ENCODED_GROUP=$(echo -n "$GROUP_PATH" | jq -sRr @uri)
 
     echo "  → Calling GitLab API..."
-    echo "  → URL: $GITLAB_URL/api/v4/groups/$ENCODED_GROUP/projects"
+    if [ "$ANONYMOUS_MODE" = "true" ]; then
+        echo "  → URL: https://gitlab.example.com/api/v4/groups/GROUP_ENCODED/projects"
+    else
+        echo "  → URL: $GITLAB_URL/api/v4/groups/$ENCODED_GROUP/projects"
+    fi
 
     # Fetch projects from GitLab API with timeout
     RESPONSE=$(curl -s --fail --max-time 30 --connect-timeout 10 \
@@ -112,7 +139,7 @@ for GROUP_PATH in "${GROUPS[@]}"; do
     CURL_EXIT_CODE=$?
 
     if [ $CURL_EXIT_CODE -ne 0 ]; then
-        echo "  ⚠️  Warning: Failed to fetch projects from group $GROUP_PATH"
+        echo "  ⚠️  Warning: Failed to fetch projects from group $(log_group "$GROUP_PATH")"
         echo "  → curl exit code: $CURL_EXIT_CODE"
         if [ $CURL_EXIT_CODE -eq 22 ]; then
             echo "  → HTTP error (group not found or no access)"
@@ -143,7 +170,7 @@ for GROUP_PATH in "${GROUPS[@]}"; do
     fi
 
     if [ "$PROJECTS_IN_GROUP" -eq 0 ]; then
-        echo "  ℹ️  No projects found in group $GROUP_PATH"
+        echo "  ℹ️  No projects found in group $(log_group "$GROUP_PATH")"
         continue
     fi
 
@@ -165,7 +192,7 @@ for GROUP_PATH in "${GROUPS[@]}"; do
         PROJECT_COUNT=$((PROJECT_COUNT + PROJECTS_IN_GROUP))
         echo "  ✓ Successfully parsed $PROJECTS_IN_GROUP project(s)"
     else
-        echo "  ⚠️  Failed to parse projects from group $GROUP_PATH"
+        echo "  ⚠️  Failed to parse projects from group $(log_group "$GROUP_PATH")"
         echo "  → jq error: $PARSE_OUTPUT"
     fi
 done
