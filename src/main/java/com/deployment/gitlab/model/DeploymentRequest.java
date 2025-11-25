@@ -28,11 +28,6 @@ public class DeploymentRequest {
     private String requesterName;
 
     /**
-     * Requester email
-     */
-    private String requesterEmail;
-
-    /**
      * Additional comments/notes
      */
     private String notes;

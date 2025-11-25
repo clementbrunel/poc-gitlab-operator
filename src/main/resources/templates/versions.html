@@ -14,6 +14,24 @@
 
         <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
+        <!-- Search Form -->
+        <form method="get" action="/versions" class="section" style="margin-bottom: 2rem;">
+            <div class="search-bar" style="margin-bottom: 0;">
+                <input type="text"
+                       id="searchInput"
+                       name="search"
+                       th:value="${search}"
+                       placeholder="🔍 Rechercher une application par nom..."
+                       style="flex: 1;">
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+                <a th:href="@{/versions}" class="btn btn-secondary" th:if="${search != null and !search.isEmpty()}">
+                    Réinitialiser
+                </a>
+            </div>
+            <!-- Hidden fields to preserve pagination settings -->
+            <input type="hidden" name="size" th:value="${page != null ? page.pageSize : 10}">
+        </form>
+
         <table class="table" th:if="${versions != null and !versions.isEmpty()}">
             <thead>
                 <tr>
@@ -65,14 +83,14 @@
 
             <div class="pagination">
                 <!-- First Page -->
-                <a th:href="@{/versions(page=0,size=${page.pageSize})}"
+                <a th:href="@{/versions(page=0,size=${page.pageSize},search=${search})}"
                    th:class="${page.first} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
                    th:aria-disabled="${page.first}">
                     &laquo; Première
                 </a>
 
                 <!-- Previous Page -->
-                <a th:href="@{/versions(page=${page.currentPage - 1},size=${page.pageSize})}"
+                <a th:href="@{/versions(page=${page.currentPage - 1},size=${page.pageSize},search=${search})}"
                    th:class="${page.first} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
                    th:aria-disabled="${page.first}">
                     &lsaquo; Précédente
@@ -83,20 +101,20 @@
                     T(java.lang.Math).max(0, page.currentPage - 2),
                     T(java.lang.Math).min(page.totalPages - 1, page.currentPage + 2)
                 )}">
-                    <a th:href="@{/versions(page=${i},size=${page.pageSize})}"
+                    <a th:href="@{/versions(page=${i},size=${page.pageSize},search=${search})}"
                        th:class="${i == page.currentPage} ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'"
                        th:text="${i + 1}">1</a>
                 </span>
 
                 <!-- Next Page -->
-                <a th:href="@{/versions(page=${page.currentPage + 1},size=${page.pageSize})}"
+                <a th:href="@{/versions(page=${page.currentPage + 1},size=${page.pageSize},search=${search})}"
                    th:class="${page.last} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
                    th:aria-disabled="${page.last}">
                     Suivante &rsaquo;
                 </a>
 
                 <!-- Last Page -->
-                <a th:href="@{/versions(page=${page.totalPages - 1},size=${page.pageSize})}"
+                <a th:href="@{/versions(page=${page.totalPages - 1},size=${page.pageSize},search=${search})}"
                    th:class="${page.last} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
                    th:aria-disabled="${page.last}">
                     Dernière &raquo;

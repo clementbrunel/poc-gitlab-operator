@@ -43,7 +43,6 @@ public class DeploymentController {
     public String submitDeployment(
             @RequestParam("applicationNames") List<String> applicationNames,
             @RequestParam("requesterName") String requesterName,
-            @RequestParam("requesterEmail") String requesterEmail,
             @RequestParam("targetEnvironment") String targetEnvironment,
             @RequestParam(value = "notes", required = false) String notes,
             RedirectAttributes redirectAttributes) {
@@ -54,7 +53,6 @@ public class DeploymentController {
             DeploymentRequest request = DeploymentRequest.builder()
                     .applicationNames(applicationNames)
                     .requesterName(requesterName)
-                    .requesterEmail(requesterEmail)
                     .targetEnvironment(targetEnvironment)
                     .notes(notes)
                     .build();

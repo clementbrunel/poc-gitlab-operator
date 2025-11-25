@@ -24,22 +24,25 @@ public class VersionsController {
     public String versions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
             Model model) {
-        log.debug("Displaying versions page (page: {}, size: {})", page, size);
+        log.debug("Displaying versions page (page: {}, size: {}, search: {})", page, size, search);
 
         try {
             // Ensure page size is reasonable (between 5 and 100)
             int pageSize = Math.max(5, Math.min(size, 100));
 
-            PagedApplicationVersions pagedVersions = gitLabService.getAllApplicationVersionsPaged(page, pageSize);
+            PagedApplicationVersions pagedVersions = gitLabService.getAllApplicationVersionsPaged(page, pageSize, search);
 
             model.addAttribute("versions", pagedVersions.getContent());
             model.addAttribute("page", pagedVersions);
+            model.addAttribute("search", search);
             model.addAttribute("error", null);
         } catch (Exception e) {
             log.error("Error retrieving versions", e);
             model.addAttribute("versions", java.util.List.of());
             model.addAttribute("page", null);
+            model.addAttribute("search", search);
             model.addAttribute("error", "Error retrieving versions: " + e.getMessage());
         }
 

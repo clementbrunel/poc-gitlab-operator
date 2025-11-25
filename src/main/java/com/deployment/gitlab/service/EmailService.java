@@ -76,7 +76,6 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(emailConfig.getFrom());
             message.setTo(emailConfig.getTo());
-            message.setCc(request.getRequesterEmail());
             message.setSubject(emailSubject);
             message.setText(buildEmailBody(request));
 
