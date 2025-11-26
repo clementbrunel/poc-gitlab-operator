@@ -102,7 +102,7 @@ h2 {
 /* Features grid */
 .features {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-top: 2rem;
 }
@@ -406,7 +406,7 @@ h2 {
 /* Dashboard */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     margin-top: 2rem;
 }
@@ -517,12 +517,12 @@ h2 {
 .search-bar {
     margin-bottom: 1rem;
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .search-bar input[type="text"] {
-    flex: 1;
+    width: 100%;
     padding: 0.75rem;
     border: 2px solid #3498db;
     border-radius: 4px;
@@ -538,7 +538,7 @@ h2 {
 .search-bar #resultCount {
     color: #666;
     font-size: 0.9rem;
-    min-width: 100px;
+    text-align: right;
 }
 
 /* Inline checkbox items for compact display */

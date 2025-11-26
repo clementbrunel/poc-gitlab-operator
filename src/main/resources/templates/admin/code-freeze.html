@@ -45,7 +45,7 @@
 
                     <div class="form-group">
                         <label for="endDate">Date de fin prévue *</label>
-                        <input type="datetime-local" id="endDate" name="endDate" required>
+                        <input type="date" id="endDate" name="endDate" required>
                     </div>
 
                     <button type="submit" class="btn btn-danger">Activer le Code Freeze Global</button>
@@ -72,9 +72,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width: 40px;">
-                            <input type="checkbox" id="selectAll">
-                        </th>
+                        <th style="width: 40px;"></th>
                         <th>Application</th>
                         <th>Description</th>
                         <th>Statut</th>
@@ -115,31 +113,10 @@
         </div>
 
         <script>
-            // Select All functionality
-            document.getElementById('selectAll').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.app-checkbox');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                updateBulkButtons();
-            });
-
             // Individual checkbox change
             document.querySelectorAll('.app-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateSelectAllState();
-                    updateBulkButtons();
-                });
+                checkbox.addEventListener('change', updateBulkButtons);
             });
-
-            // Update Select All state based on individual checkboxes
-            function updateSelectAllState() {
-                const checkboxes = document.querySelectorAll('.app-checkbox');
-                const selectAll = document.getElementById('selectAll');
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                const someChecked = Array.from(checkboxes).some(cb => cb.checked);
-
-                selectAll.checked = allChecked;
-                selectAll.indeterminate = someChecked && !allChecked;
-            }
 
             // Update bulk action buttons state
             function updateBulkButtons() {

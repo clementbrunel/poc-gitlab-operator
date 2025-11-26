@@ -3,10 +3,41 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <script th:src="@{/js/loading.js}"></script>
 </head>
 <body>
     <header th:fragment="header" class="header">
+        <script>
+            // Inline loading overlay for immediate availability
+            window.showLoading = function() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (!overlay) {
+                    if (!document.body) return; // Body not ready
+                    overlay = document.createElement('div');
+                    overlay.id = 'loadingOverlay';
+                    overlay.className = 'loading-overlay active';
+                    overlay.innerHTML = '<div class="loading-content"><div class="loading-spinner"></div><div class="loading-text">Chargement des versions...</div></div>';
+                    document.body.appendChild(overlay);
+                } else {
+                    overlay.classList.add('active');
+                }
+            };
+
+            window.hideLoading = function() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.classList.remove('active');
+                }
+            };
+
+            // Hide loading when page loads
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    window.addEventListener('load', hideLoading);
+                });
+            } else {
+                window.addEventListener('load', hideLoading);
+            }
+        </script>
         <div class="container">
             <nav class="nav">
                 <div class="nav-brand">
@@ -14,7 +45,7 @@
                 </div>
                 <ul class="nav-menu">
                     <li><a th:href="@{/}">Accueil</a></li>
-                    <li><a th:href="@{/versions}" class="versions-link" onclick="if(typeof showLoading === 'function') showLoading();">Versions</a></li>
+                    <li><a th:href="@{/versions}" class="versions-link" onclick="showLoading();">Versions</a></li>
                     <li><a th:href="@{/deployment}">Déploiement</a></li>
                     <li sec:authorize="hasRole('ADMIN')">
                         <a th:href="@{/admin/dashboard}">Admin</a>

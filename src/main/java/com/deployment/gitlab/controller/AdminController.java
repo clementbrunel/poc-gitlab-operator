@@ -85,14 +85,16 @@ public class AdminController {
     @PostMapping("/code-freeze/global/enable")
     public String enableGlobalFreeze(
             @RequestParam("reason") String reason,
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
         log.info("Enabling global code freeze by {}", authentication.getName());
 
         try {
-            codeFreezeService.enableGlobalFreeze(reason, endDate, authentication.getName());
+            // Convert LocalDate to LocalDateTime (end of day: 23:59:59)
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+            codeFreezeService.enableGlobalFreeze(reason, endDateTime, authentication.getName());
             redirectAttributes.addFlashAttribute("success", "Global code freeze enabled");
         } catch (Exception e) {
             log.error("Error enabling global code freeze", e);
