@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Versions - GitLab Deployment Manager</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/loading.js}"></script>
 </head>
 <body>
     <div th:replace="~{fragments/header :: header}"></div>
@@ -84,14 +85,14 @@
             <div class="pagination">
                 <!-- First Page -->
                 <a th:href="@{/versions(page=0,size=${page.pageSize},search=${search})}"
-                   th:class="${page.first} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:class="${page.first} ? 'btn btn-sm btn-secondary disabled pagination-link' : 'btn btn-sm btn-secondary pagination-link'"
                    th:aria-disabled="${page.first}">
                     &laquo; Première
                 </a>
 
                 <!-- Previous Page -->
                 <a th:href="@{/versions(page=${page.currentPage - 1},size=${page.pageSize},search=${search})}"
-                   th:class="${page.first} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:class="${page.first} ? 'btn btn-sm btn-secondary disabled pagination-link' : 'btn btn-sm btn-secondary pagination-link'"
                    th:aria-disabled="${page.first}">
                     &lsaquo; Précédente
                 </a>
@@ -102,20 +103,20 @@
                     T(java.lang.Math).min(page.totalPages - 1, page.currentPage + 2)
                 )}">
                     <a th:href="@{/versions(page=${i},size=${page.pageSize},search=${search})}"
-                       th:class="${i == page.currentPage} ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'"
+                       th:class="${i == page.currentPage} ? 'btn btn-sm btn-primary pagination-link' : 'btn btn-sm btn-secondary pagination-link'"
                        th:text="${i + 1}">1</a>
                 </span>
 
                 <!-- Next Page -->
                 <a th:href="@{/versions(page=${page.currentPage + 1},size=${page.pageSize},search=${search})}"
-                   th:class="${page.last} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:class="${page.last} ? 'btn btn-sm btn-secondary disabled pagination-link' : 'btn btn-sm btn-secondary pagination-link'"
                    th:aria-disabled="${page.last}">
                     Suivante &rsaquo;
                 </a>
 
                 <!-- Last Page -->
                 <a th:href="@{/versions(page=${page.totalPages - 1},size=${page.pageSize},search=${search})}"
-                   th:class="${page.last} ? 'btn btn-sm btn-secondary disabled' : 'btn btn-sm btn-secondary'"
+                   th:class="${page.last} ? 'btn btn-sm btn-secondary disabled pagination-link' : 'btn btn-sm btn-secondary pagination-link'"
                    th:aria-disabled="${page.last}">
                     Dernière &raquo;
                 </a>
@@ -142,11 +143,29 @@
 
     <script>
         function changePageSize(newSize) {
+            showLoading();
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('size', newSize);
             currentUrl.searchParams.set('page', '0'); // Reset to first page
             window.location.href = currentUrl.toString();
         }
+
+        // Attach loading behavior to pagination links and versions navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attach to pagination links
+            attachLoadingToLinks('.pagination-link');
+
+            // Attach to versions nav link in header
+            attachLoadingToLinks('.versions-link');
+
+            // Attach to search form submit
+            const searchForm = document.querySelector('form[action="/versions"]');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function() {
+                    showLoading();
+                });
+            }
+        });
     </script>
 
     <div th:replace="~{fragments/footer :: footer}"></div>
