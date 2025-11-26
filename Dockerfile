@@ -13,7 +13,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Stage 2: Runtime with Oracle OpenJDK 21
-FROM container-registry.oracle.com/java/jdk:21-oraclelinux8
+FROM openjdk:26-ea-21-oraclelinux8
 
 WORKDIR /app
 
