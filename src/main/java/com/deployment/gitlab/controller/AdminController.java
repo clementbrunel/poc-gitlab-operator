@@ -128,7 +128,7 @@ public class AdminController {
         try {
             codeFreezeService.freezeApplication(applicationName, "Frozen by admin", authentication.getName());
             redirectAttributes.addFlashAttribute("success",
-                    "Application '" + applicationName + "' frozen");
+                    "Application '" + applicationName + "' gelée");
         } catch (Exception e) {
             log.error("Error freezing application {}", applicationName, e);
             redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
@@ -147,7 +147,7 @@ public class AdminController {
         try {
             codeFreezeService.unfreezeApplication(applicationName);
             redirectAttributes.addFlashAttribute("success",
-                    "Application '" + applicationName + "' unfrozen");
+                    "Application '" + applicationName + "' dégelée");
         } catch (Exception e) {
             log.error("Error unfreezing application {}", applicationName, e);
             redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());

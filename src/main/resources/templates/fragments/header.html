@@ -14,7 +14,7 @@
                 </div>
                 <ul class="nav-menu">
                     <li><a th:href="@{/}">Accueil</a></li>
-                    <li><a th:href="@{/versions}" class="versions-link">Versions</a></li>
+                    <li><a th:href="@{/versions}" class="versions-link" onclick="if(typeof showLoading === 'function') showLoading();">Versions</a></li>
                     <li><a th:href="@{/deployment}">Déploiement</a></li>
                     <li sec:authorize="hasRole('ADMIN')">
                         <a th:href="@{/admin/dashboard}">Admin</a>

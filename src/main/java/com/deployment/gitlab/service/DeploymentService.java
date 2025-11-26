@@ -38,7 +38,7 @@ public class DeploymentService {
         }
 
         if (!frozenApps.isEmpty()) {
-            String message = "The following applications are currently frozen: " +
+            String message = "Les applications suivantes sont actuellement gelées : " +
                     String.join(", ", frozenApps);
             log.warn("Attempted deployment of frozen applications: {}", frozenApps);
             throw new IllegalStateException(message);
@@ -78,7 +78,7 @@ public class DeploymentService {
 
             // Check that the application is not frozen
             if (codeFreezeService.isApplicationFrozen(appName)) {
-                issues.add("Application '" + appName + "' is currently frozen");
+                issues.add("Application '" + appName + "' est actuellement gelée");
             }
         }
 

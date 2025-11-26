@@ -4,6 +4,12 @@
 
 // Create loading overlay element
 function createLoadingOverlay() {
+    // Wait for body to be available
+    if (!document.body) {
+        setTimeout(createLoadingOverlay, 10);
+        return null;
+    }
+
     const overlay = document.createElement('div');
     overlay.id = 'loadingOverlay';
     overlay.className = 'loading-overlay';
@@ -17,17 +23,18 @@ function createLoadingOverlay() {
     return overlay;
 }
 
-// Show loading overlay
-function showLoading() {
+// Show loading overlay - globally available immediately
+window.showLoading = function() {
     let overlay = document.getElementById('loadingOverlay');
     if (!overlay) {
         overlay = createLoadingOverlay();
+        if (!overlay) return; // Body not ready yet
     }
     overlay.classList.add('active');
 }
 
-// Hide loading overlay
-function hideLoading() {
+// Hide loading overlay - globally available immediately
+window.hideLoading = function() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) {
         overlay.classList.remove('active');
