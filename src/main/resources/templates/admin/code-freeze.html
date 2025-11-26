@@ -57,9 +57,24 @@
         <div class="section">
             <h2>Freeze par Application</h2>
 
+            <!-- Bulk Actions -->
+            <div class="bulk-actions" style="margin-bottom: 1rem;">
+                <form id="bulkFreezeForm" th:action="@{/admin/code-freeze/app/bulk-freeze}" method="post" style="display: inline; margin-right: 0.5rem;">
+                    <input type="hidden" name="applicationNames" id="bulkFreezeInput">
+                    <button type="submit" class="btn btn-small btn-warning" id="bulkFreezeBtn" disabled>Geler la sélection</button>
+                </form>
+                <form id="bulkUnfreezeForm" th:action="@{/admin/code-freeze/app/bulk-unfreeze}" method="post" style="display: inline;">
+                    <input type="hidden" name="applicationNames" id="bulkUnfreezeInput">
+                    <button type="submit" class="btn btn-small btn-success" id="bulkUnfreezeBtn" disabled>Dégeler la sélection</button>
+                </form>
+            </div>
+
             <table class="table">
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="selectAll">
+                        </th>
                         <th>Application</th>
                         <th>Description</th>
                         <th>Statut</th>
@@ -68,6 +83,9 @@
                 </thead>
                 <tbody>
                     <tr th:each="app : ${applications}">
+                        <td>
+                            <input type="checkbox" class="app-checkbox" th:value="${app.name}">
+                        </td>
                         <td><strong th:text="${app.name}">App Name</strong></td>
                         <td th:text="${app.description}">Description</td>
                         <td>
@@ -95,6 +113,71 @@
                 </tbody>
             </table>
         </div>
+
+        <script>
+            // Select All functionality
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.app-checkbox');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateBulkButtons();
+            });
+
+            // Individual checkbox change
+            document.querySelectorAll('.app-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectAllState();
+                    updateBulkButtons();
+                });
+            });
+
+            // Update Select All state based on individual checkboxes
+            function updateSelectAllState() {
+                const checkboxes = document.querySelectorAll('.app-checkbox');
+                const selectAll = document.getElementById('selectAll');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+                selectAll.checked = allChecked;
+                selectAll.indeterminate = someChecked && !allChecked;
+            }
+
+            // Update bulk action buttons state
+            function updateBulkButtons() {
+                const checkedBoxes = document.querySelectorAll('.app-checkbox:checked');
+                const hasSelection = checkedBoxes.length > 0;
+
+                document.getElementById('bulkFreezeBtn').disabled = !hasSelection;
+                document.getElementById('bulkUnfreezeBtn').disabled = !hasSelection;
+            }
+
+            // Handle bulk freeze submission
+            document.getElementById('bulkFreezeForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const selectedApps = Array.from(document.querySelectorAll('.app-checkbox:checked'))
+                    .map(cb => cb.value);
+
+                if (selectedApps.length === 0) {
+                    return false;
+                }
+
+                document.getElementById('bulkFreezeInput').value = selectedApps.join(',');
+                this.submit();
+            });
+
+            // Handle bulk unfreeze submission
+            document.getElementById('bulkUnfreezeForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const selectedApps = Array.from(document.querySelectorAll('.app-checkbox:checked'))
+                    .map(cb => cb.value);
+
+                if (selectedApps.length === 0) {
+                    return false;
+                }
+
+                document.getElementById('bulkUnfreezeInput').value = selectedApps.join(',');
+                this.submit();
+            });
+        </script>
 
         <div class="actions">
             <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Retour au Dashboard</a>

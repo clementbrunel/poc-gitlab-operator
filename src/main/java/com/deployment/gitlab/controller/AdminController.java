@@ -155,4 +155,71 @@ public class AdminController {
 
         return "redirect:/admin/code-freeze";
     }
+
+    @PostMapping("/code-freeze/app/bulk-freeze")
+    public String bulkFreezeApplications(
+            @RequestParam("applicationNames") String applicationNames,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        String[] appNames = applicationNames.split(",");
+        log.info("Bulk freezing {} applications by {}", appNames.length, authentication.getName());
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (String appName : appNames) {
+            try {
+                codeFreezeService.freezeApplication(appName.trim(), "Frozen by admin (bulk)", authentication.getName());
+                successCount++;
+            } catch (Exception e) {
+                log.error("Error freezing application {} in bulk operation", appName, e);
+                failureCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            redirectAttributes.addFlashAttribute("success",
+                    successCount + " application(s) gelée(s)");
+        }
+        if (failureCount > 0) {
+            redirectAttributes.addFlashAttribute("error",
+                    failureCount + " application(s) n'ont pas pu être gelée(s)");
+        }
+
+        return "redirect:/admin/code-freeze";
+    }
+
+    @PostMapping("/code-freeze/app/bulk-unfreeze")
+    public String bulkUnfreezeApplications(
+            @RequestParam("applicationNames") String applicationNames,
+            RedirectAttributes redirectAttributes) {
+
+        String[] appNames = applicationNames.split(",");
+        log.info("Bulk unfreezing {} applications", appNames.length);
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (String appName : appNames) {
+            try {
+                codeFreezeService.unfreezeApplication(appName.trim());
+                successCount++;
+            } catch (Exception e) {
+                log.error("Error unfreezing application {} in bulk operation", appName, e);
+                failureCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            redirectAttributes.addFlashAttribute("success",
+                    successCount + " application(s) dégelée(s)");
+        }
+        if (failureCount > 0) {
+            redirectAttributes.addFlashAttribute("error",
+                    failureCount + " application(s) n'ont pas pu être dégelée(s)");
+        }
+
+        return "redirect:/admin/code-freeze";
+    }
 }
