@@ -24,8 +24,8 @@
                     <strong>Code Freeze Global ACTIF</strong>
                     <p><strong>Raison:</strong> <span th:text="${codeFreeze.reason}">Raison</span></p>
                     <p><strong>Activé par:</strong> <span th:text="${codeFreeze.activatedBy}">Admin</span></p>
-                    <p><strong>Date début:</strong> <span th:text="${#temporals.format(codeFreeze.freezeStartDate, 'dd/MM/yyyy HH:mm')}">Date</span></p>
-                    <p><strong>Date fin prévue:</strong> <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                    <p><strong>Date début:</strong> <span th:text="${#temporals.format(codeFreeze.freezeStartDate, 'dd/MM/yyyy')}">Date</span></p>
+                    <p><strong>Date fin prévue:</strong> <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy')}">Date</span></p>
                 </div>
 
                 <form th:action="@{/admin/code-freeze/global/disable}" method="post">

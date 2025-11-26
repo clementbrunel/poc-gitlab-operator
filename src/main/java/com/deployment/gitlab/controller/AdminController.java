@@ -2,6 +2,7 @@ package com.deployment.gitlab.controller;
 
 import com.deployment.gitlab.model.Application;
 import com.deployment.gitlab.model.CodeFreeze;
+import com.deployment.gitlab.repository.ApplicationRepository;
 import com.deployment.gitlab.service.CodeFreezeService;
 import com.deployment.gitlab.service.GitLabService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class AdminController {
 
     private final CodeFreezeService codeFreezeService;
     private final GitLabService gitLabService;
+    private final ApplicationRepository applicationRepository;
 
     @GetMapping("/login")
     public String login() {
@@ -47,6 +49,10 @@ public class AdminController {
         boolean gitlabConnected = gitLabService.testGitLabConnection();
         model.addAttribute("gitlabConnected", gitlabConnected);
 
+        // Count synchronized applications
+        int syncedAppsCount = applicationRepository.findAllEnabled().size();
+        model.addAttribute("syncedAppsCount", syncedAppsCount);
+
         return "admin/dashboard";
     }
 
@@ -56,6 +62,19 @@ public class AdminController {
 
         CodeFreeze codeFreeze = codeFreezeService.getCodeFreezeStatus();
         List<Application> freezableApps = codeFreezeService.getAllFreezableApplications();
+
+        // Sort applications: frozen ones first, then active ones
+        freezableApps.sort((app1, app2) -> {
+            boolean app1Frozen = codeFreeze.isApplicationFrozen(app1.getName());
+            boolean app2Frozen = codeFreeze.isApplicationFrozen(app2.getName());
+
+            if (app1Frozen == app2Frozen) {
+                // If both have same freeze status, sort by name
+                return app1.getName().compareToIgnoreCase(app2.getName());
+            }
+            // Frozen apps come first
+            return app1Frozen ? -1 : 1;
+        });
 
         model.addAttribute("codeFreeze", codeFreeze);
         model.addAttribute("applications", freezableApps);

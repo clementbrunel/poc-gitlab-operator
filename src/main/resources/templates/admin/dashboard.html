@@ -23,10 +23,12 @@
                 <div th:if="${gitlabConnected}" class="status-ok">
                     <span class="badge badge-success">CONNECTÉ</span>
                     <p>La connexion à GitLab fonctionne correctement.</p>
+                    <p><strong><span th:text="${syncedAppsCount}">0</span> projet(s)</strong> synchronisé(s)</p>
                 </div>
                 <div th:unless="${gitlabConnected}" class="status-error">
                     <span class="badge badge-danger">DÉCONNECTÉ</span>
                     <p>Impossible de se connecter à GitLab. Vérifiez la configuration.</p>
+                    <p><strong><span th:text="${syncedAppsCount}">0</span> projet(s)</strong> synchronisé(s)</p>
                 </div>
             </div>
 

@@ -62,7 +62,7 @@
                         <small><code th:text="${version.commitSha}">abc123</code></small>
                     </td>
                     <td th:text="${version.commitAuthor}">Author</td>
-                    <td th:text="${#temporals.format(version.commitDate, 'dd/MM/yyyy HH:mm')}">Date</td>
+                    <td th:text="${#temporals.format(version.commitDate, 'dd/MM/yyyy')}">Date</td>
                     <td>
                         <span th:if="${version.frozen}" class="badge badge-danger">GELÉ</span>
                         <span th:unless="${version.frozen}" class="badge badge-success">Actif</span>

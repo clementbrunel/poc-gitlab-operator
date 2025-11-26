@@ -33,6 +33,9 @@ public class DeploymentController {
         log.debug("Displaying deployment page");
 
         List<Application> applications = applicationRepository.findAllEnabled();
+        // Sort applications alphabetically by name
+        applications.sort((app1, app2) -> app1.getName().compareToIgnoreCase(app2.getName()));
+
         model.addAttribute("applications", applications);
         model.addAttribute("codeFreeze", codeFreezeService.getCodeFreezeStatus());
 

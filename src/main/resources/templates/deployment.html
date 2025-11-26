@@ -18,7 +18,7 @@
         <div th:if="${codeFreeze.globalFreezeEnabled}" class="alert alert-warning">
             <strong>Code Freeze Global Activé</strong>
             <p th:text="${codeFreeze.reason}">Raison du freeze</p>
-            <p>Fin prévue: <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p>Fin prévue: <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy')}"></span></p>
         </div>
 
         <form th:action="@{/deployment}" method="post" class="form" onsubmit="return confirmDeployment()">
