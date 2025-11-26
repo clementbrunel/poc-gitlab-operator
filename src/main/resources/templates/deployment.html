@@ -94,8 +94,25 @@
                         <span id="modalAppCount"></span>
                     </div>
                     <div class="detail-section">
-                        <strong>Applications sélectionnées :</strong>
-                        <ul id="modalAppList" class="app-list"></ul>
+                        <strong>Applications et livrables :</strong>
+                        <div id="artifactsLoadingSpinner" class="artifacts-loading" style="display: none;">
+                            <div class="spinner-small"></div>
+                            <span>Récupération des livrables en cours...</span>
+                        </div>
+                        <div id="artifactsTableContainer">
+                            <table class="artifacts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Application</th>
+                                        <th>Livrables (.ear)</th>
+                                        <th>Date de génération</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="artifactsTableBody">
+                                    <!-- Filled dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -118,7 +135,7 @@
         let formToSubmit = null;
         let isSubmitting = false;
 
-        function confirmDeployment() {
+        async function confirmDeployment() {
             // Get selected applications
             const selectedApps = document.querySelectorAll('input[name="applicationNames"]:checked');
 
@@ -131,28 +148,128 @@
             // Get target environment
             const environment = document.getElementById('targetEnvironment').value;
 
-            // Populate modal with data
+            // Populate modal with basic data
             const modalEnvironment = document.getElementById('modalEnvironment');
             modalEnvironment.textContent = environment;
             modalEnvironment.className = 'environment-badge environment-' + environment.toLowerCase();
 
             document.getElementById('modalAppCount').textContent = selectedApps.length;
 
-            // Build application list
-            const appList = document.getElementById('modalAppList');
-            appList.innerHTML = '';
-            selectedApps.forEach(app => {
-                const label = document.querySelector(`label[for="${app.id}"] .app-name`);
-                const li = document.createElement('li');
-                li.textContent = label.textContent;
-                appList.appendChild(li);
-            });
+            // Get application names
+            const appNames = Array.from(selectedApps).map(app => app.value);
 
             // Store form reference and show modal
             formToSubmit = document.querySelector('form');
             document.getElementById('confirmModal').style.display = 'flex';
 
+            // Show loading spinner and hide table
+            document.getElementById('artifactsLoadingSpinner').style.display = 'flex';
+            document.getElementById('artifactsTableContainer').style.display = 'none';
+
+            // Fetch artifacts from backend
+            try {
+                const response = await fetch('/api/deployment/artifacts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appNames)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des artifacts');
+                }
+
+                const artifacts = await response.json();
+
+                // Build artifacts table
+                buildArtifactsTable(artifacts);
+
+            } catch (error) {
+                console.error('Error fetching artifacts:', error);
+                // Show error message in table
+                const tbody = document.getElementById('artifactsTableBody');
+                tbody.innerHTML = '<tr><td colspan="3" class="error-message">Erreur lors de la récupération des livrables. Vérifiez la connexion GitLab.</td></tr>';
+            } finally {
+                // Hide loading spinner and show table
+                document.getElementById('artifactsLoadingSpinner').style.display = 'none';
+                document.getElementById('artifactsTableContainer').style.display = 'block';
+            }
+
             return false; // Prevent immediate form submission
+        }
+
+        function buildArtifactsTable(artifacts) {
+            const tbody = document.getElementById('artifactsTableBody');
+            tbody.innerHTML = '';
+
+            artifacts.forEach(artifact => {
+                const row = document.createElement('tr');
+
+                // Add error class if artifact retrieval failed
+                if (!artifact.success) {
+                    row.classList.add('artifact-error');
+                }
+
+                // Application name column
+                const nameCell = document.createElement('td');
+                nameCell.textContent = artifact.applicationName;
+                row.appendChild(nameCell);
+
+                // Artifacts column
+                const artifactsCell = document.createElement('td');
+                if (artifact.success && artifact.artifacts && artifact.artifacts.length > 0) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'artifact-list';
+                    artifact.artifacts.forEach(earFile => {
+                        const li = document.createElement('li');
+                        li.textContent = earFile;
+                        ul.appendChild(li);
+                    });
+                    artifactsCell.appendChild(ul);
+                } else {
+                    const errorSpan = document.createElement('span');
+                    errorSpan.className = 'artifact-error-message';
+                    errorSpan.textContent = artifact.errorMessage || 'Aucun livrable trouvé';
+                    artifactsCell.appendChild(errorSpan);
+                }
+                row.appendChild(artifactsCell);
+
+                // Build date column
+                const dateCell = document.createElement('td');
+                if (artifact.buildDate) {
+                    const date = new Date(artifact.buildDate);
+                    dateCell.textContent = date.toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    // Add link to job if available
+                    if (artifact.jobUrl) {
+                        dateCell.innerHTML = '';
+                        const link = document.createElement('a');
+                        link.href = artifact.jobUrl;
+                        link.target = '_blank';
+                        link.textContent = date.toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        link.title = 'Voir le job GitLab';
+                        dateCell.appendChild(link);
+                    }
+                } else {
+                    dateCell.textContent = '-';
+                }
+                row.appendChild(dateCell);
+
+                tbody.appendChild(row);
+            });
         }
 
         function closeModal() {

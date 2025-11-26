@@ -197,4 +197,132 @@ public class GitLabService {
     public boolean testGitLabConnection() {
         return gitLabClient.testConnection();
     }
+
+    /**
+     * Retrieves artifact information (.ear files) for a single application
+     */
+    public ApplicationArtifactInfo getApplicationArtifacts(Application app) {
+        try {
+            log.debug("Retrieving artifacts for application: {}", app.getName());
+
+            // Step 1: Get the latest successful pipeline for the branch
+            List<GitLabPipeline> pipelines = gitLabClient.getPipelines(
+                    app.getGitlabProjectId(),
+                    app.getBranch(),
+                    "success"
+            );
+
+            if (pipelines == null || pipelines.isEmpty()) {
+                log.warn("No successful pipeline found for {} on branch {}", app.getName(), app.getBranch());
+                return ApplicationArtifactInfo.builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Aucune pipeline réussie trouvée sur la branche " + app.getBranch())
+                        .artifacts(List.of())
+                        .build();
+            }
+
+            // Get the most recent successful pipeline
+            GitLabPipeline latestPipeline = pipelines.get(0);
+
+            // Step 2: Get all jobs for this pipeline
+            List<GitLabJob> jobs = gitLabClient.getJobs(app.getGitlabProjectId(), latestPipeline.getId());
+
+            if (jobs == null || jobs.isEmpty()) {
+                log.warn("No jobs found for pipeline {} of application {}", latestPipeline.getId(), app.getName());
+                return ApplicationArtifactInfo.builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Aucun job trouvé dans la pipeline")
+                        .artifacts(List.of())
+                        .build();
+            }
+
+            // Step 3: Find the "build" job
+            GitLabJob buildJob = jobs.stream()
+                    .filter(job -> "build".equalsIgnoreCase(job.getName()))
+                    .filter(job -> "success".equalsIgnoreCase(job.getStatus()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (buildJob == null) {
+                log.warn("No successful 'build' job found for application {}", app.getName());
+                return ApplicationArtifactInfo.builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Aucun job 'build' réussi trouvé")
+                        .artifacts(List.of())
+                        .build();
+            }
+
+            // Step 4: Get artifact files from the build job
+            List<String> earFiles = gitLabClient.getJobArtifactFiles(app.getGitlabProjectId(), buildJob.getId());
+
+            if (earFiles.isEmpty()) {
+                log.warn("No .ear artifacts found for job {} of application {}", buildJob.getId(), app.getName());
+                return ApplicationArtifactInfo.builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Aucun fichier .ear trouvé dans les artifacts")
+                        .artifacts(List.of())
+                        .buildDate(buildJob.getFinishedAt() != null
+                                ? buildJob.getFinishedAt().toLocalDateTime()
+                                : null)
+                        .jobUrl(buildJob.getWebUrl())
+                        .build();
+            }
+
+            // Success!
+            return ApplicationArtifactInfo.builder()
+                    .applicationName(app.getName())
+                    .success(true)
+                    .artifacts(earFiles)
+                    .buildDate(buildJob.getFinishedAt() != null
+                            ? buildJob.getFinishedAt().toLocalDateTime()
+                            : null)
+                    .jobUrl(buildJob.getWebUrl())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error retrieving artifacts for application {}: {}", app.getName(), e.getMessage(), e);
+            return ApplicationArtifactInfo.builder()
+                    .applicationName(app.getName())
+                    .success(false)
+                    .errorMessage("Erreur technique: " + e.getMessage())
+                    .artifacts(List.of())
+                    .build();
+        }
+    }
+
+    /**
+     * Retrieves artifact information for multiple applications
+     * Processes in parallel for better performance
+     */
+    public List<ApplicationArtifactInfo> getMultipleApplicationArtifacts(List<String> applicationNames) {
+        log.info("Retrieving artifacts for {} application(s)", applicationNames.size());
+
+        List<ApplicationArtifactInfo> results = new ArrayList<>();
+
+        for (String appName : applicationNames) {
+            // Find the application
+            Application app = applicationRepository.findByName(appName);
+
+            if (app == null) {
+                log.warn("Application not found: {}", appName);
+                results.add(ApplicationArtifactInfo.builder()
+                        .applicationName(appName)
+                        .success(false)
+                        .errorMessage("Application non trouvée")
+                        .artifacts(List.of())
+                        .build());
+                continue;
+            }
+
+            // Get artifacts for this application
+            ApplicationArtifactInfo artifactInfo = getApplicationArtifacts(app);
+            results.add(artifactInfo);
+        }
+
+        return results;
+    }
 }
