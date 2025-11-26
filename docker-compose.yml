@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  gitlab-deployment-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gitlab-deployment-manager
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring profiles
+      - SPRING_PROFILES_ACTIVE=prod
+
+      # GitLab configuration (override with your values)
+      - GITLAB_URL=${GITLAB_URL:-https://gitlab.example.com}
+      - GITLAB_TOKEN=${GITLAB_TOKEN:-your-gitlab-token}
+
+      # Admin credentials (override with your values)
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+
+      # Email configuration (override with your values)
+      - SPRING_MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+      - SPRING_MAIL_PORT=${MAIL_PORT:-587}
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME:-your-email@example.com}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD:-your-email-password}
+      - DEPLOYMENT_EMAIL_TO=${DEPLOYMENT_EMAIL_TO:-deployment-team@example.com}
+
+      # JVM options
+      - JAVA_OPTS=-Xms256m -Xmx512m
+
+    volumes:
+      # Mount external application.yml if needed
+      - ./src/main/resources/application.yml:/app/config/application.yml:ro
+
+      # Mount applications.yml for application definitions
+      - ./src/main/resources/applications.yml:/app/config/applications.yml:ro
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
