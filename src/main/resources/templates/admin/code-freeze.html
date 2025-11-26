@@ -44,12 +44,64 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="endDate">Date de fin prévue *</label>
-                        <input type="date" id="endDate" name="endDate" required>
+                        <label for="endDate">Date de fin prévue * (jj/mm/aaaa)</label>
+                        <input type="text" id="endDate" name="endDate" required
+                               placeholder="jj/mm/aaaa"
+                               pattern="\d{2}/\d{2}/\d{4}"
+                               title="Format: jj/mm/aaaa">
+                        <input type="hidden" id="endDateISO" name="endDate">
                     </div>
 
                     <button type="submit" class="btn btn-danger">Activer le Code Freeze Global</button>
                 </form>
+
+                <script>
+                    // Format date input for dd/mm/yyyy
+                    const endDateInput = document.getElementById('endDate');
+                    const endDateISOInput = document.getElementById('endDateISO');
+                    const freezeForm = endDateInput.closest('form');
+
+                    // Auto-format as user types
+                    endDateInput.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+
+                        if (value.length >= 2) {
+                            value = value.substring(0, 2) + '/' + value.substring(2);
+                        }
+                        if (value.length >= 5) {
+                            value = value.substring(0, 5) + '/' + value.substring(5, 9);
+                        }
+
+                        e.target.value = value;
+                    });
+
+                    // Convert to ISO format before submission
+                    freezeForm.addEventListener('submit', function(e) {
+                        const dateValue = endDateInput.value;
+                        const parts = dateValue.split('/');
+
+                        if (parts.length === 3) {
+                            const day = parts[0];
+                            const month = parts[1];
+                            const year = parts[2];
+
+                            // Validate date
+                            const date = new Date(year, month - 1, day);
+                            if (date.getFullYear() != year || date.getMonth() != month - 1 || date.getDate() != day) {
+                                e.preventDefault();
+                                alert('Date invalide. Veuillez entrer une date valide au format jj/mm/aaaa');
+                                return false;
+                            }
+
+                            // Convert to ISO format (yyyy-mm-dd)
+                            const isoDate = year + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
+                            endDateISOInput.value = isoDate;
+
+                            // Disable visible input to prevent it from being submitted
+                            endDateInput.disabled = true;
+                        }
+                    });
+                </script>
             </div>
         </div>
 
