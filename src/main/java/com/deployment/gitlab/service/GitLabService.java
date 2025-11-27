@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -123,7 +124,7 @@ public class GitLabService {
             }
 
             // Builds the version
-            ApplicationVersion version = ApplicationVersion.builder()
+            return ApplicationVersion.builder()
                     .application(app)
                     .version(extractVersion(commit))
                     .commitSha(commit.getShortId())
@@ -135,8 +136,6 @@ public class GitLabService {
                     .commitUrl(commit.getWebUrl())
                     .frozen(codeFreezeService.isApplicationFrozen(app.getName()))
                     .build();
-
-            return version;
         } catch (Exception e) {
             log.error("Error retrieving version for {}: {}",
                     app.getName(), e.getMessage());
@@ -305,9 +304,9 @@ public class GitLabService {
 
         for (String appName : applicationNames) {
             // Find the application
-            Application app = applicationRepository.findByName(appName);
+            Optional<Application> app = applicationRepository.findByName(appName);
 
-            if (app == null) {
+            if (app.isEmpty()) {
                 log.warn("Application not found: {}", appName);
                 results.add(ApplicationArtifactInfo.builder()
                         .applicationName(appName)
@@ -319,7 +318,7 @@ public class GitLabService {
             }
 
             // Get artifacts for this application
-            ApplicationArtifactInfo artifactInfo = getApplicationArtifacts(app);
+            ApplicationArtifactInfo artifactInfo = getApplicationArtifacts(app.get());
             results.add(artifactInfo);
         }
 

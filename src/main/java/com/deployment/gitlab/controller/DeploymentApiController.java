@@ -13,7 +13,7 @@ import java.util.List;
  * REST API Controller for deployment-related operations
  */
 @RestController
-@RequestMapping("/api/deployment")
+@RequestMapping("/rest/deployment")
 @RequiredArgsConstructor
 @Slf4j
 public class DeploymentApiController {
@@ -32,7 +32,7 @@ public class DeploymentApiController {
 
         log.info("API call to retrieve artifacts for {} application(s)", applicationNames.size());
 
-        if (applicationNames == null || applicationNames.isEmpty()) {
+        if (applicationNames.isEmpty()) {
             log.warn("Empty application names list received");
             return ResponseEntity.badRequest().build();
         }

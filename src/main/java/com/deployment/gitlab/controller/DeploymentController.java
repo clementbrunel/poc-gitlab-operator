@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -20,6 +21,7 @@ import java.util.List;
  * Controller for the deployment page
  */
 @Controller
+@RequestMapping("/deployment")
 @RequiredArgsConstructor
 @Slf4j
 public class DeploymentController {
@@ -28,7 +30,7 @@ public class DeploymentController {
     private final DeploymentService deploymentService;
     private final CodeFreezeService codeFreezeService;
 
-    @GetMapping("/deployment")
+    @GetMapping()
     public String deployment(Model model) {
         log.debug("Displaying deployment page");
 
@@ -42,7 +44,7 @@ public class DeploymentController {
         return "deployment";
     }
 
-    @PostMapping("/deployment")
+    @PostMapping()
     public String submitDeployment(
             @RequestParam("applicationNames") List<String> applicationNames,
             @RequestParam("requesterName") String requesterName,

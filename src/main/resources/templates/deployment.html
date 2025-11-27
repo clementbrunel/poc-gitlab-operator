@@ -168,7 +168,7 @@
 
             // Fetch artifacts from backend
             try {
-                const response = await fetch('/api/deployment/artifacts', {
+                const response = await fetch('/rest/deployment/artifacts', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
