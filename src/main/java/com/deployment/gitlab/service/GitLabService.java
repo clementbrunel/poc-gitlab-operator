@@ -89,7 +89,8 @@ public class GitLabService {
             }
         }
 
-        return PagedApplicationVersions.builder()
+        return PagedApplicationVersions
+                .builder()
                 .content(versions)
                 .currentPage(page)
                 .pageSize(pageSize)
@@ -124,7 +125,8 @@ public class GitLabService {
             }
 
             // Builds the version
-            return ApplicationVersion.builder()
+            return ApplicationVersion
+                    .builder()
                     .application(app)
                     .version(extractVersion(commit))
                     .commitSha(commit.getShortId())
@@ -168,7 +170,8 @@ public class GitLabService {
         String author = demoAuthors[random.nextInt(demoAuthors.length)];
         LocalDateTime commitDate = LocalDateTime.now().minusDays(random.nextInt(30));
 
-        return ApplicationVersion.builder()
+        return ApplicationVersion
+                .builder()
                 .application(app)
                 .version("v1." + random.nextInt(10) + "." + random.nextInt(100))
                 .commitSha(commitSha)
@@ -207,13 +210,30 @@ public class GitLabService {
             // Step 1: Get the latest successful pipeline for the branch
             List<GitLabPipeline> pipelines = gitLabClient.getPipelines(
                     app.getGitlabProjectId(),
-                    app.getBranch(),
-                    "success"
+                    app.getBranch()
             );
 
             if (pipelines == null || pipelines.isEmpty()) {
+                log.warn("No pipeline found for {} on branch {}", app.getName(), app.getBranch());
+                return ApplicationArtifactInfo
+                        .builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Aucune pipeline trouvée sur la branche " + app.getBranch())
+                        .artifacts(List.of())
+                        .build();
+            }
+
+            // Get the most recent successful pipeline
+            List<String> authorizedStatus = List.of("success", "manual");
+            GitLabPipeline latestSuccessPipeline = pipelines.stream()
+                         .filter(pipe -> authorizedStatus.contains(pipe.getStatus()))
+                         .findFirst().orElse(null);
+
+            if (latestSuccessPipeline == null) {
                 log.warn("No successful pipeline found for {} on branch {}", app.getName(), app.getBranch());
-                return ApplicationArtifactInfo.builder()
+                return ApplicationArtifactInfo
+                        .builder()
                         .applicationName(app.getName())
                         .success(false)
                         .errorMessage("Aucune pipeline réussie trouvée sur la branche " + app.getBranch())
@@ -221,15 +241,13 @@ public class GitLabService {
                         .build();
             }
 
-            // Get the most recent successful pipeline
-            GitLabPipeline latestPipeline = pipelines.get(0);
-
             // Step 2: Get all jobs for this pipeline
-            List<GitLabJob> jobs = gitLabClient.getJobs(app.getGitlabProjectId(), latestPipeline.getId());
+            List<GitLabJob> jobs = gitLabClient.getJobs(app.getGitlabProjectId(), latestSuccessPipeline.getId());
 
             if (jobs == null || jobs.isEmpty()) {
-                log.warn("No jobs found for pipeline {} of application {}", latestPipeline.getId(), app.getName());
-                return ApplicationArtifactInfo.builder()
+                log.warn("No jobs found for pipeline {} of application {}", latestSuccessPipeline.getId(), app.getName());
+                return ApplicationArtifactInfo
+                        .builder()
                         .applicationName(app.getName())
                         .success(false)
                         .errorMessage("Aucun job trouvé dans la pipeline")
@@ -241,16 +259,24 @@ public class GitLabService {
             String jobName = gitLabConfig.getArtifactJobName();
             GitLabJob targetJob = jobs.stream()
                     .filter(job -> jobName.equalsIgnoreCase(job.getName()))
-                    .filter(job -> "success".equalsIgnoreCase(job.getStatus()))
                     .findFirst()
                     .orElse(null);
 
             if (targetJob == null) {
                 log.warn("No successful '{}' job found for application {}", jobName, app.getName());
-                return ApplicationArtifactInfo.builder()
+                return ApplicationArtifactInfo
+                        .builder()
                         .applicationName(app.getName())
                         .success(false)
                         .errorMessage("Aucun job '" + jobName + "' réussi trouvé")
+                        .artifacts(List.of())
+                        .build();
+            } else if (!"success".equalsIgnoreCase(targetJob.getStatus())) {
+                return ApplicationArtifactInfo
+                        .builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Le job '" + jobName + "' de la dernière pipeline réussie est au statut '" + targetJob.getStatus() + "'")
                         .artifacts(List.of())
                         .build();
             }
@@ -260,7 +286,8 @@ public class GitLabService {
 
             if (trace.isEmpty()) {
                 log.warn("No trace found for job {} of application {}", targetJob.getId(), app.getName());
-                return ApplicationArtifactInfo.builder()
+                return ApplicationArtifactInfo
+                        .builder()
                         .applicationName(app.getName())
                         .success(false)
                         .errorMessage("Aucun log trouvé pour le job '" + jobName + "'")
@@ -277,7 +304,8 @@ public class GitLabService {
 
             if (earFiles.isEmpty()) {
                 log.warn("No .ear files found in trace for job {} of application {}", targetJob.getId(), app.getName());
-                return ApplicationArtifactInfo.builder()
+                return ApplicationArtifactInfo
+                        .builder()
                         .applicationName(app.getName())
                         .success(false)
                         .errorMessage("Aucun fichier .ear trouvé dans les logs du job '" + jobName + "'")
@@ -290,7 +318,8 @@ public class GitLabService {
             }
 
             // Success!
-            return ApplicationArtifactInfo.builder()
+            return ApplicationArtifactInfo
+                    .builder()
                     .applicationName(app.getName())
                     .success(true)
                     .artifacts(earFiles)
@@ -302,7 +331,8 @@ public class GitLabService {
 
         } catch (Exception e) {
             log.error("Error retrieving artifacts for application {}: {}", app.getName(), e.getMessage(), e);
-            return ApplicationArtifactInfo.builder()
+            return ApplicationArtifactInfo
+                    .builder()
                     .applicationName(app.getName())
                     .success(false)
                     .errorMessage("Erreur technique: " + e.getMessage())
@@ -326,7 +356,8 @@ public class GitLabService {
 
             if (app.isEmpty()) {
                 log.warn("Application not found: {}", appName);
-                results.add(ApplicationArtifactInfo.builder()
+                results.add(ApplicationArtifactInfo
+                        .builder()
                         .applicationName(appName)
                         .success(false)
                         .errorMessage("Application non trouvée")

@@ -117,15 +117,14 @@ public class GitLabClient {
     /**
      * Retrieves pipelines for a project on a specific branch with a specific status
      */
-    public List<GitLabPipeline> getPipelines(Integer projectId, String branchName, String status) {
-        log.debug("Retrieving pipelines for project {} on branch {} with status {}", projectId, branchName, status);
+    public List<GitLabPipeline> getPipelines(Integer projectId, String branchName) {
+        log.debug("Retrieving pipelines for project {} on branch {}", projectId, branchName);
         try {
             return gitLabWebClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/projects/{id}/pipelines")
                             .queryParam("ref", branchName)
-                            .queryParam("status", status)
-                            .queryParam("per_page", 20)
+                            .queryParam("per_page", 30)
                             .queryParam("order_by", "updated_at")
                             .queryParam("sort", "desc")
                             .build(projectId))
