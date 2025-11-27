@@ -37,6 +37,11 @@ public class GitLabConfig {
     private int timeout = 30000;
 
     /**
+     * Name of the GitLab job containing the logs with .ear files list
+     */
+    private String artifactJobName = "jobftp";
+
+    /**
      * Creates a WebClient configured for GitLab
      */
     @Bean

@@ -237,37 +237,55 @@ public class GitLabService {
                         .build();
             }
 
-            // Step 3: Find the "build" job
-            GitLabJob buildJob = jobs.stream()
-                    .filter(job -> "build".equalsIgnoreCase(job.getName()))
+            // Step 3: Find the configured job (e.g., "jobftp")
+            String jobName = gitLabConfig.getArtifactJobName();
+            GitLabJob targetJob = jobs.stream()
+                    .filter(job -> jobName.equalsIgnoreCase(job.getName()))
                     .filter(job -> "success".equalsIgnoreCase(job.getStatus()))
                     .findFirst()
                     .orElse(null);
 
-            if (buildJob == null) {
-                log.warn("No successful 'build' job found for application {}", app.getName());
+            if (targetJob == null) {
+                log.warn("No successful '{}' job found for application {}", jobName, app.getName());
                 return ApplicationArtifactInfo.builder()
                         .applicationName(app.getName())
                         .success(false)
-                        .errorMessage("Aucun job 'build' réussi trouvé")
+                        .errorMessage("Aucun job '" + jobName + "' réussi trouvé")
                         .artifacts(List.of())
                         .build();
             }
 
-            // Step 4: Get artifact files from the build job
-            List<String> earFiles = gitLabClient.getJobArtifactFiles(app.getGitlabProjectId(), buildJob.getId());
+            // Step 4: Get trace (logs) from the job
+            String trace = gitLabClient.getJobTrace(app.getGitlabProjectId(), targetJob.getId());
 
-            if (earFiles.isEmpty()) {
-                log.warn("No .ear artifacts found for job {} of application {}", buildJob.getId(), app.getName());
+            if (trace.isEmpty()) {
+                log.warn("No trace found for job {} of application {}", targetJob.getId(), app.getName());
                 return ApplicationArtifactInfo.builder()
                         .applicationName(app.getName())
                         .success(false)
-                        .errorMessage("Aucun fichier .ear trouvé dans les artifacts")
+                        .errorMessage("Aucun log trouvé pour le job '" + jobName + "'")
                         .artifacts(List.of())
-                        .buildDate(buildJob.getFinishedAt() != null
-                                ? buildJob.getFinishedAt().toLocalDateTime()
+                        .buildDate(targetJob.getFinishedAt() != null
+                                ? targetJob.getFinishedAt().toLocalDateTime()
                                 : null)
-                        .jobUrl(buildJob.getWebUrl())
+                        .jobUrl(targetJob.getWebUrl())
+                        .build();
+            }
+
+            // Step 5: Extract .ear files from trace
+            List<String> earFiles = gitLabClient.extractEarFilesFromTrace(trace);
+
+            if (earFiles.isEmpty()) {
+                log.warn("No .ear files found in trace for job {} of application {}", targetJob.getId(), app.getName());
+                return ApplicationArtifactInfo.builder()
+                        .applicationName(app.getName())
+                        .success(false)
+                        .errorMessage("Aucun fichier .ear trouvé dans les logs du job '" + jobName + "'")
+                        .artifacts(List.of())
+                        .buildDate(targetJob.getFinishedAt() != null
+                                ? targetJob.getFinishedAt().toLocalDateTime()
+                                : null)
+                        .jobUrl(targetJob.getWebUrl())
                         .build();
             }
 
@@ -276,10 +294,10 @@ public class GitLabService {
                     .applicationName(app.getName())
                     .success(true)
                     .artifacts(earFiles)
-                    .buildDate(buildJob.getFinishedAt() != null
-                            ? buildJob.getFinishedAt().toLocalDateTime()
+                    .buildDate(targetJob.getFinishedAt() != null
+                            ? targetJob.getFinishedAt().toLocalDateTime()
                             : null)
-                    .jobUrl(buildJob.getWebUrl())
+                    .jobUrl(targetJob.getWebUrl())
                     .build();
 
         } catch (Exception e) {

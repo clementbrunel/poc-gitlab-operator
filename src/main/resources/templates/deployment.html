@@ -21,7 +21,7 @@
             <p>Fin prévue: <span th:text="${#temporals.format(codeFreeze.freezeEndDate, 'dd/MM/yyyy')}"></span></p>
         </div>
 
-        <form th:action="@{/deployment}" method="post" class="form" onsubmit="return confirmDeployment()">
+        <form th:action="@{/deployment}" method="post" class="form" onsubmit="confirmDeployment(); return false;">
             <div class="form-group">
                 <label for="requesterName">Votre nom *</label>
                 <input type="text" id="requesterName" name="requesterName" required>
@@ -190,6 +190,22 @@
                 // Show error message in table
                 const tbody = document.getElementById('artifactsTableBody');
                 tbody.innerHTML = '<tr><td colspan="3" class="error-message">Erreur lors de la récupération des livrables. Vérifiez la connexion GitLab.</td></tr>';
+
+                // Disable confirm button on error
+                const confirmBtn = document.getElementById('confirmBtn');
+                confirmBtn.disabled = true;
+                confirmBtn.title = 'Impossible de soumettre : erreur lors de la récupération des livrables';
+
+                // Add warning message
+                const warningId = 'artifacts-error-warning';
+                if (!document.getElementById(warningId)) {
+                    const warning = document.createElement('div');
+                    warning.id = warningId;
+                    warning.className = 'alert alert-error';
+                    warning.style.marginTop = '10px';
+                    warning.innerHTML = '<strong>⚠️ Erreur :</strong> Impossible de récupérer les livrables. Veuillez vérifier la connexion GitLab et réessayer.';
+                    document.querySelector('.modal-body .modal-details').appendChild(warning);
+                }
             } finally {
                 // Hide loading spinner and show table
                 document.getElementById('artifactsLoadingSpinner').style.display = 'none';
@@ -203,12 +219,15 @@
             const tbody = document.getElementById('artifactsTableBody');
             tbody.innerHTML = '';
 
+            let hasErrors = false;
+
             artifacts.forEach(artifact => {
                 const row = document.createElement('tr');
 
                 // Add error class if artifact retrieval failed
                 if (!artifact.success) {
                     row.classList.add('artifact-error');
+                    hasErrors = true;
                 }
 
                 // Application name column
@@ -270,6 +289,33 @@
 
                 tbody.appendChild(row);
             });
+
+            // Disable confirm button if there are any errors
+            const confirmBtn = document.getElementById('confirmBtn');
+            if (hasErrors) {
+                confirmBtn.disabled = true;
+                confirmBtn.title = 'Impossible de soumettre : certains livrables n\'ont pas pu être récupérés';
+
+                // Add warning message if not already present
+                const warningId = 'artifacts-error-warning';
+                if (!document.getElementById(warningId)) {
+                    const warning = document.createElement('div');
+                    warning.id = warningId;
+                    warning.className = 'alert alert-error';
+                    warning.style.marginTop = '10px';
+                    warning.innerHTML = '<strong>⚠️ Attention :</strong> Certains livrables n\'ont pas pu être récupérés. Veuillez vérifier la configuration GitLab ou retirer les applications en erreur.';
+                    document.querySelector('.modal-body .modal-details').appendChild(warning);
+                }
+            } else {
+                confirmBtn.disabled = false;
+                confirmBtn.title = '';
+
+                // Remove warning if present
+                const warning = document.getElementById('artifacts-error-warning');
+                if (warning) {
+                    warning.remove();
+                }
+            }
         }
 
         function closeModal() {
@@ -279,6 +325,17 @@
             }
             document.getElementById('confirmModal').style.display = 'none';
             formToSubmit = null;
+
+            // Clean up warning message
+            const warning = document.getElementById('artifacts-error-warning');
+            if (warning) {
+                warning.remove();
+            }
+
+            // Re-enable confirm button for next time
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = false;
+            confirmBtn.title = '';
         }
 
         function submitForm() {

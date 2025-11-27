@@ -39,6 +39,8 @@ gitlab:
   token: ${GITLAB_TOKEN:}
   api-version: v4
   timeout: 30000
+  # Nom du job GitLab contenant les logs avec la liste des .ear
+  artifact-job-name: ${GITLAB_ARTIFACT_JOB_NAME:jobftp}
 
 # Configuration Admin
 admin:

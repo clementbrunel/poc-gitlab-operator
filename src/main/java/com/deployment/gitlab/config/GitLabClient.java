@@ -166,8 +166,101 @@ public class GitLabClient {
     }
 
     /**
-     * Retrieves artifact file paths (.ear files) for a specific job
+     * Retrieves the trace (logs) of a specific job
      */
+    public String getJobTrace(Integer projectId, Long jobId) {
+        log.debug("Retrieving trace for job {} in project {}", jobId, projectId);
+        try {
+            String trace = gitLabWebClient.get()
+                    .uri("/projects/{id}/jobs/{jobId}/trace", projectId, jobId)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofMillis(gitLabConfig.getTimeout()))
+                    .block();
+
+            log.debug("Retrieved trace for job {} ({} characters)", jobId, trace != null ? trace.length() : 0);
+            return trace != null ? trace : "";
+
+        } catch (WebClientResponseException.NotFound e) {
+            log.debug("No trace found for job {}", jobId);
+            return "";
+        } catch (WebClientResponseException e) {
+            log.error("Error retrieving trace for job {}: {} - {}",
+                    jobId, e.getStatusCode(), e.getMessage());
+            return "";
+        } catch (Exception e) {
+            log.error("Error retrieving trace for job {}: {}", jobId, e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * Extracts .ear file names from job trace logs
+     * Searches for "ls -l ears/" followed by lines containing .ear files
+     */
+    public List<String> extractEarFilesFromTrace(String trace) {
+        List<String> earFiles = new ArrayList<>();
+
+        if (trace == null || trace.isEmpty()) {
+            return earFiles;
+        }
+
+        try {
+            String[] lines = trace.split("\\r?\\n");
+            boolean foundEarsListing = false;
+
+            for (String line : lines) {
+                // Look for the "ls -l ears/" command output
+                if (line.contains("ls -l ears/") || line.contains("ls -l ears")) {
+                    foundEarsListing = true;
+                    continue;
+                }
+
+                // If we found the listing, extract .ear files from subsequent lines
+                if (foundEarsListing) {
+                    // Stop if we hit another command or empty section
+                    if (line.trim().isEmpty() ||
+                        (line.startsWith("$ ") || line.startsWith("+ ") || line.contains("total "))) {
+                        // Check if it's just the "total" line from ls -l, continue reading
+                        if (line.contains("total ")) {
+                            continue;
+                        }
+                        // Otherwise, if we already found some files, we're done
+                        if (!earFiles.isEmpty()) {
+                            break;
+                        }
+                    }
+
+                    // Extract .ear filename
+                    // Format: -rw-r--r-- 1 user group 12345678 Nov 26 12:34 myapp-1.0.0-SNAPSHOT.ear
+                    // or just: myapp-1.0.0-SNAPSHOT.ear
+                    if (line.toLowerCase().contains(".ear")) {
+                        // Try to extract the filename (last part after spaces)
+                        String[] parts = line.trim().split("\\s+");
+                        for (int i = parts.length - 1; i >= 0; i--) {
+                            if (parts[i].toLowerCase().endsWith(".ear")) {
+                                earFiles.add(parts[i]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            log.debug("Extracted {} .ear file(s) from trace", earFiles.size());
+            return earFiles;
+
+        } catch (Exception e) {
+            log.error("Error extracting .ear files from trace: {}", e.getMessage());
+            return earFiles;
+        }
+    }
+
+    /**
+     * Retrieves artifact file paths (.ear files) for a specific job
+     * @deprecated Use getJobTrace() and extractEarFilesFromTrace() instead
+     */
+    @Deprecated
     public List<String> getJobArtifactFiles(Integer projectId, Long jobId) {
         log.debug("Retrieving artifact files for job {} in project {}", jobId, projectId);
         try {
