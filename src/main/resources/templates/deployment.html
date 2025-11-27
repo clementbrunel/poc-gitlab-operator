@@ -164,6 +164,11 @@
             formToSubmit = document.querySelector('form');
             document.getElementById('confirmModal').style.display = 'flex';
 
+            // Disable confirm button during loading
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.title = 'Récupération des livrables en cours...';
+
             // Show loading spinner and hide table
             document.getElementById('artifactsLoadingSpinner').style.display = 'flex';
             document.getElementById('artifactsTableContainer').style.display = 'none';

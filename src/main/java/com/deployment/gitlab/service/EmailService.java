@@ -167,18 +167,17 @@ public class EmailService {
 
         if (artifacts != null && !artifacts.isEmpty()) {
             for (Map.Entry<String, List<String>> entry : artifacts.entrySet()) {
-                String appName = entry.getKey();
                 List<String> earFiles = entry.getValue();
 
                 // Add each ear file with prefix
                 for (String earFile : earFiles) {
-                    earFilesList.append("  • ").append(earPrefix).append(earFile).append("\n");
+                    earFilesList.append(" • ").append(earPrefix).append(earFile).append("\n");
                 }
             }
         } else {
             // Fallback to application names if no artifacts
             for (String appName : request.getApplicationNames()) {
-                earFilesList.append("  • ").append(appName).append("\n");
+                earFilesList.append(" • ").append(appName).append("\n");
             }
         }
 
@@ -192,7 +191,7 @@ public class EmailService {
             .replace("{{TARGET_ENVIRONMENT}}", request.getTargetEnvironment())
             .replace("{{REQUEST_DATE}}", request.getRequestDate().format(formatter))
             .replace("{{REQUESTER_NAME}}", request.getRequesterName())
-            .replace("{{APPLICATIONS}}", earFilesList.toString().trim())
+            .replace("{{APPLICATIONS}}", earFilesList.toString())
             .replace("{{COMMENT}}", comment);
 
         return emailBody;
