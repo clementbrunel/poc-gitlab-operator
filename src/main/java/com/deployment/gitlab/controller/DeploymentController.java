@@ -5,6 +5,8 @@ import com.deployment.gitlab.model.DeploymentRequest;
 import com.deployment.gitlab.repository.ApplicationRepository;
 import com.deployment.gitlab.service.CodeFreezeService;
 import com.deployment.gitlab.service.DeploymentService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for the deployment page
@@ -29,6 +33,7 @@ public class DeploymentController {
     private final ApplicationRepository applicationRepository;
     private final DeploymentService deploymentService;
     private final CodeFreezeService codeFreezeService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping()
     public String deployment(Model model) {
@@ -50,13 +55,27 @@ public class DeploymentController {
             @RequestParam("requesterName") String requesterName,
             @RequestParam("targetEnvironment") String targetEnvironment,
             @RequestParam(value = "notes", required = false) String notes,
+            @RequestParam(value = "artifactsJson", required = false) String artifactsJson,
             RedirectAttributes redirectAttributes) {
 
         log.info("Submitting deployment request by {}", requesterName);
 
         try {
+            // Parse artifacts JSON
+            Map<String, List<String>> artifacts = new HashMap<>();
+            if (artifactsJson != null && !artifactsJson.isEmpty()) {
+                try {
+                    artifacts = objectMapper.readValue(artifactsJson,
+                            new TypeReference<Map<String, List<String>>>() {});
+                    log.debug("Parsed {} artifacts from JSON", artifacts.size());
+                } catch (Exception e) {
+                    log.warn("Failed to parse artifacts JSON: {}", e.getMessage());
+                }
+            }
+
             DeploymentRequest request = DeploymentRequest.builder()
                     .applicationNames(applicationNames)
+                    .artifacts(artifacts)
                     .requesterName(requesterName)
                     .targetEnvironment(targetEnvironment)
                     .notes(notes)

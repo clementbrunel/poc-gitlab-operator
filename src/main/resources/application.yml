@@ -55,6 +55,10 @@ deployment:
     subjects:
       GREEN: "[DÉPLOIEMENT GREEN] Nouvelle demande de déploiement"
       ORANGE: "[DÉPLOIEMENT ORANGE] Nouvelle demande de déploiement"
+  # Préfixes pour les noms des .ear dans les emails selon l'environnement
+  ear-prefix:
+    GREEN: ${DEPLOYMENT_EAR_PREFIX_GREEN}
+    ORANGE: ${DEPLOYMENT_EAR_PREFIX_ORANGE}
 
 # Configuration Serveur
 server:

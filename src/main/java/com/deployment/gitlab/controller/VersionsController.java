@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class VersionsController {
 
     private final GitLabService gitLabService;
-    private static final int DEFAULT_PAGE_SIZE = 10;
 
     @GetMapping()
     public String versions(

@@ -1,5 +1,6 @@
 package com.deployment.gitlab.service;
 
+import com.deployment.gitlab.config.DeploymentConfig;
 import com.deployment.gitlab.config.EmailConfig;
 import com.deployment.gitlab.model.DeploymentRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Service for sending emails
@@ -24,6 +27,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final EmailConfig emailConfig;
+    private final DeploymentConfig deploymentConfig;
 
     @Value("${spring.mail.host:unconfigured.smtp}")
     private String smtpHost;
@@ -154,10 +158,28 @@ public class EmailService {
         // Load template for the target environment
         String template = loadEmailTemplate(request.getTargetEnvironment());
 
-        // Build applications list
-        StringBuilder applicationsList = new StringBuilder();
-        for (String appName : request.getApplicationNames()) {
-            applicationsList.append("  • ").append(appName).append("\n");
+        // Get ear prefix for the environment
+        String earPrefix = deploymentConfig.getEarPrefix(request.getTargetEnvironment());
+
+        // Build ear files list with prefix
+        StringBuilder earFilesList = new StringBuilder();
+        Map<String, List<String>> artifacts = request.getArtifacts();
+
+        if (artifacts != null && !artifacts.isEmpty()) {
+            for (Map.Entry<String, List<String>> entry : artifacts.entrySet()) {
+                String appName = entry.getKey();
+                List<String> earFiles = entry.getValue();
+
+                // Add each ear file with prefix
+                for (String earFile : earFiles) {
+                    earFilesList.append("  • ").append(earPrefix).append(earFile).append("\n");
+                }
+            }
+        } else {
+            // Fallback to application names if no artifacts
+            for (String appName : request.getApplicationNames()) {
+                earFilesList.append("  • ").append(appName).append("\n");
+            }
         }
 
         // Build comment section
@@ -170,7 +192,7 @@ public class EmailService {
             .replace("{{TARGET_ENVIRONMENT}}", request.getTargetEnvironment())
             .replace("{{REQUEST_DATE}}", request.getRequestDate().format(formatter))
             .replace("{{REQUESTER_NAME}}", request.getRequesterName())
-            .replace("{{APPLICATIONS}}", applicationsList.toString().trim())
+            .replace("{{APPLICATIONS}}", earFilesList.toString().trim())
             .replace("{{COMMENT}}", comment);
 
         return emailBody;

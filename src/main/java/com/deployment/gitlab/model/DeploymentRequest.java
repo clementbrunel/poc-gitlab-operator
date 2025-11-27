@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Model representing a deployment request
@@ -21,6 +22,11 @@ public class DeploymentRequest {
      * Applications to deploy
      */
     private List<String> applicationNames;
+
+    /**
+     * Artifacts (ear files) to deploy, organized by application name
+     */
+    private Map<String, List<String>> artifacts;
 
     /**
      * Requester name
